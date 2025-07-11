@@ -1,0 +1,73 @@
+<div style="max-width: 1000px; margin: auto; padding: 20px;">
+  <h2>Sube tu archivo de datos</h2>
+
+  <input type="file" (change)="seleccionarArchivo($event)"
+         accept=".csv, .xlsx, .xls, .txt"
+         hidden #inputArchivo />
+
+  <button mat-raised-button color="accent" (click)="inputArchivo.click()">
+    <mat-icon>upload_file</mat-icon>
+    Seleccionar archivo
+  </button>
+
+  <p *ngIf="archivo" style="margin-top: 10px;">
+    <strong>Archivo seleccionado:</strong> {{ archivo.name }}
+  </p>
+
+  <div *ngIf="datos.length > 0" style="margin-top: 20px;">
+    <h3>Vista previa del dataset</h3>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <!-- Filtro de cantidad -->
+      <mat-form-field appearance="fill" style="width: 250px;">
+        <mat-label>Filas a mostrar y analizar</mat-label>
+        <input matInput
+               type="number"
+               [(ngModel)]="cantidadSeleccionada"
+               #cantidadCtrl="ngModel"
+               name="cantidadSeleccionada"
+               required
+               [min]="5"
+               [max]="datos.length"
+               (ngModelChange)="validarCantidad()">
+
+        <mat-error *ngIf="cantidadCtrl.errors?.['min']">
+          Debes seleccionar al menos 5 filas.
+        </mat-error>
+        <mat-error *ngIf="cantidadCtrl.errors?.['max']">
+          No puedes seleccionar más de {{ datos.length }} filas.
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Total de registros -->
+      <p style="margin: 0;"><strong>Total de registros:</strong> {{ datos.length }}</p>
+    </div>
+
+    <div style="max-height: 400px; overflow: auto;">
+      <table mat-table [dataSource]="datosFiltrados" class="mat-elevation-z8"
+             [style.min-width.px]="(columnas.length + 1) * 150">
+
+        <!-- Índice -->
+        <ng-container matColumnDef="indice">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+        </ng-container>
+
+        <!-- Columnas dinámicas -->
+        <ng-container *ngFor="let columna of columnas" [matColumnDef]="columna">
+          <th mat-header-cell *matHeaderCellDef>{{ columna }}</th>
+          <td mat-cell *matCellDef="let row">{{ row[columna] }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnasConIndice"></tr>
+        <tr mat-row *matRowDef="let row; columns: columnasConIndice;"></tr>
+
+      </table>
+    </div>
+
+    <button mat-raised-button color="primary" style="margin-top: 20px;" (click)="enviarArchivo()">
+      <mat-icon>analytics</mat-icon>
+      Enviar para análisis
+    </button>
+  </div>
+</div>

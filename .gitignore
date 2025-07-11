@@ -1,0 +1,38 @@
+# === Angular ===
+abandono/node_modules/
+abandono/dist/
+abandono/.angular/
+abandono/.vscode/
+abandono/.env
+abandono/.DS_Store
+abandono/package-lock.json
+
+# Opcional: ocultar archivos temporales de pruebas o backups
+abandono/*.log
+abandono/*~
+
+
+# === FastAPI / Python ===
+backend-abandono/__pycache__/
+backend-abandono/*.pyc
+backend-abandono/.env
+backend-abandono/.DS_Store
+backend-abandono/venv/
+backend-abandono/.vscode/
+backend-abandono/*.log
+
+# === General (ambos) ===
+.env
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.log
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.bak
+*.swp
