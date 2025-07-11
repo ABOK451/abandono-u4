@@ -1,0 +1,16 @@
+Crear y activar entorno virtual
+
+# Windows PowerShell
+python -m venv venv
+.\venv\Scripts\activate
+
+Instalar dependencias
+
+pip install fastapi uvicorn scikit-learn pandas python-multipart
+
+# Desde la carpeta backend-abandono
+cd backend-abandono
+
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+o
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
