@@ -164,18 +164,66 @@
 
         <!-- Eje X -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700"
-            >Eje X (Categorías)</label
+          <label class="text-sm font-medium text-slate-700">
+            {{
+              chartType === "scatter"
+                ? "Eje X (Numérico)"
+                : "Eje X (Categorías)"
+            }}</label
           >
           <select
             [(ngModel)]="selectedXAxis"
             (change)="onXAxisChange()"
             class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
-            <option *ngFor="let col of columnasCateg" [value]="col">
+            <!-- Para scatter plot, mostrar solo columnas numéricas -->
+            <ng-container *ngIf="chartType === 'scatter'">
+              <option value="">Selecciona una variable numérica</option>
+              <option *ngFor="let col of columnasNumericas" [value]="col">
+                {{ getColumnDisplayName(col) }}
+              </option>
+            </ng-container>
+
+            <!-- Para otros tipos de gráfico, mostrar columnas categóricas -->
+            <ng-container *ngIf="chartType !== 'scatter'">
+              <option *ngFor="let col of columnasCateg" [value]="col">
+                {{ getColumnDisplayName(col) }}
+              </option>
+            </ng-container>
+          </select>
+        </div>
+
+        <div class="space-y-2" *ngIf="chartType === 'scatter'">
+          <label class="text-sm font-medium text-slate-700"
+            >Eje Y (Numérico)</label
+          >
+          <select
+            [(ngModel)]="selectedYAxis"
+            (change)="onChartTypeChange()"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          >
+            <option value="">Selecciona una variable numérica</option>
+            <option *ngFor="let col of columnasNumericas" [value]="col">
               {{ getColumnDisplayName(col) }}
             </option>
           </select>
+        </div>
+
+        <!-- Información adicional para scatter plot -->
+        <div class="space-y-2" *ngIf="chartType === 'scatter'">
+          <label class="text-sm font-medium text-slate-700">Información</label>
+          <div class="text-xs text-gray-600 bg-blue-50 p-2 rounded">
+            <p><strong>Variables numéricas disponibles:</strong></p>
+            <ul class="list-disc list-inside mt-1">
+              <li *ngFor="let col of columnasNumericas">
+                {{ getColumnDisplayName(col) }}
+              </li>
+            </ul>
+            <p class="mt-2" *ngIf="columnasNumericas.length < 2">
+              ⚠️ Se necesitan al menos 2 variables numéricas para el gráfico de
+              dispersión.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -197,7 +245,41 @@
             [yAxisLabel]="'Cantidad de personas'"
           ></app-result-grafica-barras>
         </div>
+
+        <!-- SCATTER -->
+        <app-result-grafica-dispersion
+          *ngIf="chartType === 'scatter'"
+          [bubbleData]="bubbleChartData"
+          [xAxisLabel]="getColumnDisplayName(selectedXAxis)"
+          [yAxisLabel]="getColumnDisplayName(selectedYAxis)"
+          [view]="view"
+        ></app-result-grafica-dispersion>
       </div>
+    </div>
+  </div>
+
+  <!-- Mensaje de advertencia si no hay suficientes variables numéricas -->
+  <div
+    *ngIf="chartType === 'scatter' && columnasNumericas.length < 2"
+    class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md"
+  >
+    <div class="flex items-center">
+      <svg
+        class="w-5 h-5 text-yellow-600 mr-2"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+          clip-rule="evenodd"
+        />
+      </svg>
+      <span class="text-yellow-800">
+        El gráfico de dispersión requiere al menos 2 variables numéricas.
+        Actualmente tienes {{ columnasNumericas.length }} variable(s)
+        numérica(s).
+      </span>
     </div>
   </div>
 </div>

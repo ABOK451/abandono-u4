@@ -23,6 +23,7 @@ import { FormsModule } from '@angular/forms';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { ResultGrafiaPastelComponent } from './components/graficas/result-grafia-pastel/result-grafia-pastel.component';
 import { ResultGraficaBarrasComponent } from './components/graficas/result-grafica-barras/result-grafica-barras.component';
+import { ResultGraficaDispersionComponent } from './components/graficas/result-grafica-dispersion/result-grafica-dispersion.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -30,7 +31,8 @@ import { ResultGraficaBarrasComponent } from './components/graficas/result-grafi
     UploadComponent,
     HomeComponent,
     ResultGrafiaPastelComponent,
-    ResultGraficaBarrasComponent
+    ResultGraficaBarrasComponent,
+    ResultGraficaDispersionComponent
   ],
   imports: [
     BrowserModule,

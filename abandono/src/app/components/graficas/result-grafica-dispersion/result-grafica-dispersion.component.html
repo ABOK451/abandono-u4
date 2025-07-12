@@ -1,0 +1,27 @@
+<div class="overflow-x-auto">
+  <div *ngIf="!hasValidData" class="text-center py-8 text-gray-500">
+    <p>No hay datos válidos para mostrar en el gráfico de dispersión.</p>
+    <p class="text-sm">Selecciona variables numéricas para ambos ejes.</p>
+  </div>
+  <ngx-charts-bubble-chart
+    *ngIf="hasValidData"
+    [view]="view"
+    [results]="bubbleData"
+    [xAxis]="true"
+    [yAxis]="true"
+    [legend]="true"
+    [showXAxisLabel]="true"
+    [showYAxisLabel]="true"
+    [xAxisLabel]="xAxisLabel"
+    [yAxisLabel]="yAxisLabel"
+    [minRadius]="8"
+    [maxRadius]="25"
+    [xScaleMin]="xScaleMin"
+    [xScaleMax]="xScaleMax"
+    [yScaleMin]="yScaleMin"
+    [yScaleMax]="yScaleMax"
+    [scheme]="colorScheme"
+    (select)="onSelect($event)"
+  >
+  </ngx-charts-bubble-chart>
+</div>

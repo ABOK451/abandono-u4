@@ -30,6 +30,7 @@ export class ResultComponent implements OnInit {
     { name: 'Sin riesgo', value: 0 },
   ];
   barChartData: any[] = [];
+  bubbleChartData: any[] = [];
 
   ngOnInit(): void {
     const data = JSON.parse(localStorage.getItem('resultados') || '{}');
@@ -42,32 +43,21 @@ export class ResultComponent implements OnInit {
     this.metadatos = data.metadatos || {};
     this.dataList = data.descargable || [];
 
-    // Usar metadatos del backend para categorizar columnas
-    if (
-      this.metadatos.columnas_categoricas &&
-      this.metadatos.columnas_numericas
-    ) {
-      this.columnasCateg = this.metadatos.columnas_categoricas;
-      this.columnasNumericas = this.metadatos.columnas_numericas;
-    } else {
-      // Fallback: usar datos procesados para obtener columnas
-      if (this.datosProcesados.length > 0) {
-        this.columnas = Object.keys(this.datosProcesados[0]);
-        this.categorizarColumnasFallback();
-      }
-    }
+    // Procesar columnas basándose en los datos reales
+    this.procesarColumnas();
 
-    // Asignar valores por defecto
-    this.selectedXAxis =
-      this.columnasCateg.find((col) => col === 'riesgo') ||
-      this.columnasCateg.find((col) => col === 'sexo') ||
-      this.columnasCateg[0] ||
-      'riesgo';
+    // Asignar valores por defecto - usar la primera columna categórica útil
+    this.selectedXAxis = this.columnasCateg[0] || '';
+
+    // Para scatter plot, usar variables numéricas por defecto
+    if (this.chartType === 'scatter') {
+      this.selectedXAxis = this.columnasNumericas[0] || '';
+      this.selectedYAxis =
+        this.columnasNumericas[1] || this.columnasNumericas[0] || '';
+    }
 
     // Generar datos iniciales
-    if (this.chartType === 'bar') {
-      this.generarBarChartData();
-    }
+    this.updateChartData();
 
     // Configurar gráfica de pastel
     const enRiesgo = this.resumen?.en_riesgo || 0;
@@ -86,6 +76,86 @@ export class ResultComponent implements OnInit {
     });
   }
 
+  private procesarColumnas(): void {
+    if (this.datosOriginales.length === 0) return;
+
+    // Obtener todas las columnas
+    const todasLasColumnas = Object.keys(this.datosOriginales[0]);
+
+    // Definir columnas que sabemos que son numéricas
+    const columnasNumericas = [
+      '¿Cuál es tu edad?',
+      '¿Cuál fue tu promedio escolar en el último ciclo?',
+      '¿Cuántas faltas acumulaste en el último mes?',
+      'edad',
+      'promedio',
+      'faltas',
+    ];
+
+    // Filtrar columnas numéricas que existen en los datos
+    this.columnasNumericas = todasLasColumnas.filter((col) => {
+      // Verificar si la columna está en nuestra lista de numéricas conocidas
+      const esNumericaConocida = columnasNumericas.some(
+        (numCol) => col.includes(numCol) || numCol.includes(col)
+      );
+
+      if (esNumericaConocida) return true;
+
+      // También verificar si todos los valores son numéricos
+      return this.datosOriginales.every((fila) => {
+        const valor = fila[col];
+        return (
+          valor === null ||
+          valor === undefined ||
+          valor === '' ||
+          !isNaN(Number(valor))
+        );
+      });
+    });
+
+    // Columnas que NO queremos mostrar en las visualizaciones
+    const columnasExcluidas = [
+      'Marca temporal',
+      'Nombre',
+      'nombre',
+      'riesgo', // Esta ya está implícita en todas las visualizaciones
+      'abandona', // Es redundante con riesgo
+      'timestamp',
+    ];
+
+    // Las columnas categóricas son todas las demás, excluyendo las numéricas y las excluidas
+    this.columnasCateg = todasLasColumnas.filter((col) => {
+      return (
+        !this.columnasNumericas.includes(col) &&
+        !columnasExcluidas.some(
+          (excluida) => col.includes(excluida) || excluida.includes(col)
+        )
+      );
+    });
+
+    console.log('Columnas procesadas:', {
+      numericas: this.columnasNumericas,
+      categoricas: this.columnasCateg,
+      excluidas: columnasExcluidas,
+    });
+  }
+
+  private updateChartData(): void {
+    switch (this.chartType) {
+      case 'pie':
+        this.generarPieDataPorCategoriaYCategoriaRiesgo();
+        break;
+      case 'bar':
+        this.generarDistribucionPorCategoria();
+        break;
+      case 'scatter':
+        this.generarBubbleChartData();
+        break;
+      default:
+        break;
+    }
+  }
+
   exportarCSV(): void {
     if (this.resultados.length === 0) return;
 
@@ -101,122 +171,49 @@ export class ResultComponent implements OnInit {
     link.click();
   }
 
-  //================LOGICA DE GRAFICAS============================
-
-  private categorizarColumnasFallback(): void {
-    // Fallback en caso de que no vengan los metadatos
-    const categoricosForzados = [
-      'riesgo',
-      'abandona',
-      'sexo',
-      'rendimiento',
-      'trabajo',
-    ];
-    const numericosForzados = ['edad', 'promedio', 'faltas'];
-
-    this.columnasCateg = this.columnas.filter(
-      (col) =>
-        categoricosForzados.includes(col) ||
-        col === 'nombre' ||
-        (this.datosProcesados.length > 0 &&
-          this.datosProcesados.some((d) => typeof d[col] === 'string'))
-    );
-
-    this.columnasNumericas = this.columnas.filter(
-      (col) =>
-        numericosForzados.includes(col) ||
-        (this.datosProcesados.length > 0 &&
-          this.datosProcesados.every((d) => typeof d[col] === 'number'))
-    );
-  }
-
   getColumnDisplayName(column: string): string {
-    // Usar mapeo de nombres del backend si está disponible
-    if (this.metadatos.mapeo_nombres && this.metadatos.mapeo_nombres[column]) {
-      return this.metadatos.mapeo_nombres[column];
-    }
-
-    // Mapeo fallback
-    const displayNames: { [key: string]: string } = {
-      edad: 'Edad',
-      sexo: 'Sexo',
-      promedio: 'Promedio Escolar',
-      rendimiento: 'Rendimiento Académico',
-      faltas: 'Faltas',
-      trabajo: 'Trabaja',
-      nivel_socioeconomico: 'Nivel Socioeconómico',
-      apoyo_familiar: 'Apoyo Familiar',
-      internet: 'Acceso a Internet',
-      problemas_emocionales: 'Problemas Emocionales',
-      motivacion: 'Motivación',
-      abandono_pensado: 'Pensó en Abandonar',
-      actividades: 'Actividades Extracurriculares',
-      calidad_enseñanza: 'Calidad de Enseñanza',
-      transporte: 'Problemas de Transporte',
-      riesgo: 'Nivel de Riesgo',
-      abandona: 'Abandona',
-    };
-
-    return displayNames[column] || column;
+  return column
+    .replace(/_/g, ' ')                 
+    .replace(/\b\w/g, l => l.toUpperCase())
+    .trim();
   }
 
   onChartTypeChange(): void {
-    if (this.chartType === 'pie') {
-      this.generarPieDataPorCategoriaYCategoriaRiesgo();
-    } else if (this.chartType === 'bar') {
-      this.generarDistribucionPorCategoria();
+    // Si cambia a scatter, asegurar que ambos ejes sean numéricos
+    if (this.chartType === 'scatter') {
+      if (!this.columnasNumericas.includes(this.selectedXAxis)) {
+        this.selectedXAxis = this.columnasNumericas[0] || '';
+      }
+      if (
+        !this.selectedYAxis ||
+        !this.columnasNumericas.includes(this.selectedYAxis)
+      ) {
+        this.selectedYAxis =
+          this.columnasNumericas[1] || this.columnasNumericas[0] || '';
+      }
+    } else {
+      // Para otros tipos de gráfico, usar columnas categóricas
+      if (!this.columnasCateg.includes(this.selectedXAxis)) {
+        this.selectedXAxis = this.columnasCateg[0] || '';
+      }
     }
+
+    this.updateChartData();
   }
 
-  onXAxisChange() {
-    if (this.chartType === 'pie') {
-      this.generarPieDataPorCategoriaYCategoriaRiesgo();
-    } else if (this.chartType === 'bar') {
-      this.generarDistribucionPorCategoria();
-    }
+  onXAxisChange(): void {
+    this.updateChartData();
   }
 
-  generarBarChartData(): void {
-    if (
-      !this.selectedXAxis ||
-      !this.selectedYAxis ||
-      this.datosOriginales.length === 0 ||
-      this.datosProcesados.length === 0
-    ) {
-      this.barChartData = [];
-      return;
+  private obtenerValorNumerico(fila: any, columna: string): number | null {
+    const valor = fila[columna];
+
+    if (valor === null || valor === undefined || valor === '') {
+      return null;
     }
 
-    console.log(
-      'Generando gráfica:',
-      this.selectedXAxis,
-      'vs',
-      this.selectedYAxis
-    );
-
-    const conteos = new Map<string, number>();
-
-    for (let i = 0; i < this.datosOriginales.length; i++) {
-      const original = this.datosOriginales[i];
-      const procesado = this.datosProcesados[i];
-
-      const xVal = original[this.selectedXAxis]?.toString() || 'Sin datos';
-      const yVal = procesado[this.selectedYAxis]?.toString() || 'Sin datos';
-
-      const key = `${xVal} | ${yVal}`;
-
-      conteos.set(key, (conteos.get(key) || 0) + 1);
-    }
-
-    // Convertir a formato ngx-charts con conteos
-    this.barChartData = Array.from(conteos.entries()).map(([key, count]) => {
-      return { name: key, value: count };
-    });
-
-    // Ordenar por valor descendente para mejor visualización
-    this.barChartData.sort((a, b) => b.value - a.value);
-
-    console.log('Datos generados:', this.barChartData);
+    const numeroConvertido = Number(valor);
+    return isNaN(numeroConvertido) ? null : numeroConvertido;
   }
 
   generarDistribucionPorCategoria(): void {
@@ -281,9 +278,110 @@ export class ResultComponent implements OnInit {
       this.pieData.push({ name: key, value: cantidad });
     }
 
-    // Opcional: ordenar para que se vea ordenado
+    // Ordenar para que se vea ordenado
     this.pieData.sort((a, b) => b.value - a.value);
 
     console.log('Datos pie por categoría y riesgo:', this.pieData);
+  }
+
+  generarBubbleChartData(): void {
+    if (
+      !this.selectedXAxis ||
+      !this.selectedYAxis ||
+      this.datosOriginales.length === 0
+    ) {
+      this.bubbleChartData = [];
+      return;
+    }
+
+    // VALIDACIÓN: Verificar que ambas variables sean numéricas
+    if (
+      !this.columnasNumericas.includes(this.selectedXAxis) ||
+      !this.columnasNumericas.includes(this.selectedYAxis)
+    ) {
+      console.warn('Ambas variables deben ser numéricas para el scatter plot');
+      this.bubbleChartData = [];
+      return;
+    }
+
+    console.log(
+      'Generando scatter plot para:',
+      this.selectedXAxis,
+      'vs',
+      this.selectedYAxis
+    );
+
+    const puntos = [];
+
+    for (let i = 0; i < this.datosOriginales.length; i++) {
+      const fila = this.datosOriginales[i];
+
+      const xVal = this.obtenerValorNumerico(fila, this.selectedXAxis);
+      const yVal = this.obtenerValorNumerico(fila, this.selectedYAxis);
+
+      // Solo agregar puntos con valores numéricos válidos
+      if (xVal !== null && yVal !== null) {
+        // Determinar el riesgo
+        let riesgo = 'Sin riesgo';
+        if (
+          fila['riesgo'] === 'En riesgo de abandono' ||
+          fila['riesgo'] === 'En riesgo' ||
+          fila['abandona'] === 'Sí' ||
+          fila['abandona'] === true
+        ) {
+          riesgo = 'En riesgo';
+        }
+
+        const nombre = fila['Nombre'] || fila['nombre'] || `Punto ${i + 1}`;
+
+        puntos.push({
+          name: nombre,
+          x: xVal,
+          y: yVal,
+          r: 12, // Radio fijo
+          riesgo: riesgo,
+        });
+      }
+    }
+
+    console.log('Puntos generados:', puntos);
+
+    if (puntos.length === 0) {
+      console.warn('No se generaron puntos válidos. Verifica los datos.');
+      this.bubbleChartData = [];
+      return;
+    }
+
+    // Agrupar puntos por riesgo
+    const puntosEnRiesgo = puntos.filter((p) => p.riesgo === 'En riesgo');
+    const puntosSinRiesgo = puntos.filter((p) => p.riesgo === 'Sin riesgo');
+
+    this.bubbleChartData = [];
+
+    if (puntosEnRiesgo.length > 0) {
+      this.bubbleChartData.push({
+        name: 'En riesgo',
+        series: puntosEnRiesgo.map((p) => ({
+          name: p.name,
+          x: p.x,
+          y: p.y,
+          r: p.r,
+        })),
+      });
+    }
+
+    if (puntosSinRiesgo.length > 0) {
+      this.bubbleChartData.push({
+        name: 'Sin riesgo',
+        series: puntosSinRiesgo.map((p) => ({
+          name: p.name,
+          x: p.x,
+          y: p.y,
+          r: p.r,
+        })),
+      });
+    }
+
+    console.log('Datos finales para bubble chart:', this.bubbleChartData);
   }
 }
