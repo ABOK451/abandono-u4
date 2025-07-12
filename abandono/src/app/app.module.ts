@@ -18,16 +18,19 @@ import { MatListModule } from '@angular/material/list';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
-import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { ResultGrafiaPastelComponent } from './components/graficas/result-grafia-pastel/result-grafia-pastel.component';
+import { ResultGraficaBarrasComponent } from './components/graficas/result-grafica-barras/result-grafica-barras.component';
 @NgModule({
   declarations: [
     AppComponent,
     ResultComponent,
     UploadComponent,
-    HomeComponent
+    HomeComponent,
+    ResultGrafiaPastelComponent,
+    ResultGraficaBarrasComponent
   ],
   imports: [
     BrowserModule,
@@ -49,8 +52,8 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
     MatSelectModule,
     MatOptionModule,
     NgxChartsModule,
-    HttpClientModule
-  ],
+    HttpClientModule,
+],
   providers: [
     provideClientHydration(withEventReplay())
   ],

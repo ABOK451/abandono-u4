@@ -1,0 +1,57 @@
+<div class="w-full">
+  <h3 class="mb-4 text-lg font-semibold text-gray-800">
+    Gráfica de Barras: {{ displayXAxisLabel }} vs {{ displayYAxisLabel }}
+  </h3>
+
+  <div class="mb-4 text-sm text-gray-600">
+    <p>
+      Mostrando la relación entre <strong>{{ displayXAxisLabel }}</strong> y
+      <strong>{{ displayYAxisLabel }}</strong>
+    </p>
+  </div>
+
+  <div *ngIf="barData.length > 0; else noDataTemplate">
+    <ngx-charts-bar-vertical
+      [scheme]="colorScheme"
+      [results]="barData"
+      [gradient]="true"
+      [xAxis]="true"
+      [yAxis]="true"
+      [legend]="false"
+      [showXAxisLabel]="true"
+      [showYAxisLabel]="true"
+      [xAxisLabel]="displayXAxisLabel"
+      [yAxisLabel]="displayYAxisLabel"
+      [tooltipDisabled]="false"
+      [showDataLabel]="true"
+      [barPadding]="8"
+      [animations]="true"
+      
+    >
+    </ngx-charts-bar-vertical>
+  </div>
+
+  <ng-template #noDataTemplate>
+    <div class="flex items-center justify-center h-64">
+      <div class="text-center">
+        <svg
+          class="w-12 h-12 text-gray-400 mx-auto mb-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          ></path>
+        </svg>
+        <p class="text-gray-600">No hay datos disponibles para mostrar</p>
+        <p class="text-sm text-gray-500">
+          Selecciona diferentes variables para generar la gráfica
+        </p>
+      </div>
+    </div>
+  </ng-template>
+</div>

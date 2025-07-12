@@ -1,33 +1,203 @@
-<h2>Resultados de la Predicción</h2>
+<h2 class="text-3xl font-bold underline mb-6 m-5">
+  Resultados de la Predicción
+</h2>
 
-<table mat-table [dataSource]="resultados" class="mat-elevation-z8" style="width: 100%; overflow-x: auto;">
-  <ng-container matColumnDef="nombre">
-    <th mat-header-cell *matHeaderCellDef>Nombre</th>
-    <td mat-cell *matCellDef="let row">{{ row.nombre }}</td>
-  </ng-container>
+<!-- Tabs -->
+<div class="space-y-6 px-5">
+  <div
+    class="grid w-full grid-cols-2 bg-white shadow-sm border rounded-md overflow-hidden"
+  >
+    <button
+      (click)="activeTab = 'visualizations'"
+      [ngClass]="{
+        'bg-blue-100 text-blue-600 font-semibold':
+          activeTab === 'visualizations',
+        'hover:bg-gray-100': activeTab !== 'visualizations'
+      }"
+      class="flex items-center justify-center space-x-2 px-4 py-2 transition-colors"
+    >
+      <svg
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path d="M4 6h16M4 12h8m-8 6h16"></path>
+      </svg>
+      <span>Visualizaciones</span>
+    </button>
 
-  <ng-container matColumnDef="riesgo">
-    <th mat-header-cell *matHeaderCellDef>Riesgo</th>
-    <td mat-cell *matCellDef="let row">{{ row.riesgo }}</td>
-  </ng-container>
-
-  <tr mat-header-row *matHeaderRowDef="['nombre', 'riesgo']"></tr>
-  <tr mat-row *matRowDef="let row; columns: ['nombre', 'riesgo'];"></tr>
-</table>
-
-<div style="margin-top: 40px;">
-  <h3>Distribución de riesgo</h3>
-  <ngx-charts-pie-chart
-    [view]="view"
-    [results]="pieData"
-    [scheme]="colorScheme"
-    [legend]="true"
-    [labels]="true"
-    [doughnut]="false"
-    [explodeSlices]="false">
-  </ngx-charts-pie-chart>
+    <button
+      (click)="activeTab = 'data'"
+      [ngClass]="{
+        'bg-blue-100 text-blue-600 font-semibold': activeTab === 'data',
+        'hover:bg-gray-100': activeTab !== 'data'
+      }"
+      class="flex items-center justify-center space-x-2 px-4 py-2 transition-colors"
+    >
+      <svg
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z"
+        ></path>
+      </svg>
+      <span>Datos</span>
+    </button>
+  </div>
 </div>
 
-<button mat-raised-button color="primary" (click)="exportarCSV()" style="margin-top: 30px;">
-  Exportar resultados
-</button>
+<!-- Contenido de la pestaña: Datos -->
+<div *ngIf="activeTab === 'data'" class="mt-6 px-5">
+  <div class="overflow-auto max-h-[350px] rounded border border-gray-300">
+    <table
+      mat-table
+      [dataSource]="resultados"
+      class="min-w-full border-separate border-spacing-y-1 border-spacing-x-0"
+    >
+      <!-- Columnas -->
+      <ng-container matColumnDef="nombre">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          class="bg-gray-200 px-4 py-2 text-left font-semibold text-gray-700 rounded-tl-md"
+        >
+          Nombre
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let row"
+          class="px-4 py-2 border border-gray-300 bg-white even:bg-gray-50"
+        >
+          {{ row.nombre }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="riesgo">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          class="bg-gray-200 px-4 py-2 text-left font-semibold text-gray-700"
+        >
+          Riesgo
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let row"
+          class="px-4 py-2 border border-gray-300 bg-white even:bg-gray-50"
+        >
+          {{ row.riesgo }}
+        </td>
+      </ng-container>
+
+      <tr
+        mat-header-row
+        *matHeaderRowDef="['nombre', 'riesgo']"
+        class="sticky top-0 z-10"
+      ></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: ['nombre', 'riesgo']"
+        class="hover:bg-blue-50 transition"
+      ></tr>
+    </table>
+  </div>
+
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="exportarCSV()"
+    class="mt-6"
+  >
+    Exportar resultados
+  </button>
+</div>
+
+<!-- Contenido de la pestaña: Visualizaciones -->
+<div *ngIf="activeTab === 'visualizations'" class="mt-6 px-5 mb-6">
+  <div class="mt-6 px-5 space-y-6">
+    <!-- Card de configuración -->
+    <div class="bg-white/70 backdrop-blur-sm shadow-xl border rounded-lg p-6">
+      <div class="mb-4">
+        <h3
+          class="flex items-center space-x-2 text-lg font-semibold text-blue-600"
+        >
+          <svg
+            class="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M4 6h16M4 12h8m-8 6h16" stroke-width="2"></path>
+          </svg>
+          <span>Configuración de Gráficos</span>
+        </h3>
+        <p class="text-sm text-gray-600">
+          Personaliza tus visualizaciones seleccionando variables y tipo de
+          gráfico
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Tipo de gráfico -->
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-slate-700"
+            >Tipo de Gráfico</label
+          >
+          <select
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            [(ngModel)]="chartType"
+            (ngModelChange)="onChartTypeChange()"
+          >
+            <option value="bar">Barras</option>
+            <option value="line">Líneas</option>
+            <option value="area">Área</option>
+            <option value="pie">Circular</option>
+            <option value="scatter">Dispersión</option>
+          </select>
+        </div>
+
+        <!-- Eje X -->
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-slate-700"
+            >Eje X (Categorías)</label
+          >
+          <select
+            [(ngModel)]="selectedXAxis"
+            (change)="onXAxisChange()"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          >
+            <option *ngFor="let col of columnasCateg" [value]="col">
+              {{ getColumnDisplayName(col) }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!--======================= GRAFICAS ===============================000 -->
+      <div class="mt-6 mb-6">
+        <!-- Grafica Pastel -->
+        <app-result-grafia-pastel
+          *ngIf="chartType === 'pie'"
+          [pieData]="pieData"
+          [view]="view"
+        ></app-result-grafia-pastel>
+
+        <!-- GRAFICA DE BARRAS -->
+
+        <div *ngIf="chartType === 'bar'">
+          <app-result-grafica-barras
+            [barData]="barChartData"
+            [xAxisLabel]="selectedXAxis"
+            [yAxisLabel]="'Cantidad de personas'"
+          ></app-result-grafica-barras>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
