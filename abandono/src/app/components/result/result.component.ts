@@ -47,7 +47,7 @@ export class ResultComponent implements OnInit {
     this.procesarColumnas();
 
     // Asignar valores por defecto - usar la primera columna categórica útil
-    this.selectedXAxis = this.columnasCateg[0] || '';
+    this.selectedXAxis = this.columnasCateg.includes('sexo') ? 'sexo' : this.columnasCateg[0] || '';
 
     // Para scatter plot, usar variables numéricas por defecto
     if (this.chartType === 'scatter') {
