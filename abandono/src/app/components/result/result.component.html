@@ -1,188 +1,215 @@
-<h2 class="text-3xl font-bold underline mb-6 m-5">
-  Resultados de la Predicción
-</h2>
+<div class="bg-blue-600 text-white py-8 px-6 mb-8 shadow-2xl">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-4xl font-bold mb-2 flex items-center gap-3">
+        <svg class="w-10 h-10 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+          </path>
+        </svg>
+        Resultados de la predicción
+      </h1>
+      <p class="text-blue-100 text-lg">Análisis completo de los datos proporcionados</p>
+    </div>
+    <div class="hidden md:block">
+      <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+        <div class="text-sm text-blue-100 mb-1">Total de registros</div>
+        <div class="text-2xl font-bold">{{ resultados.length || 0 }}</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-<!-- Tabs -->
-<div class="space-y-6 px-5">
-  <div
-    class="grid w-full grid-cols-2 bg-white shadow-sm border rounded-md overflow-hidden"
-  >
-    <button
-      (click)="activeTab = 'visualizations'"
-      [ngClass]="{
-        'bg-blue-100 text-blue-600 font-semibold':
-          activeTab === 'visualizations',
-        'hover:bg-gray-100': activeTab !== 'visualizations'
+<!-- Navegación con tabs -->
+<div class="mb-8">
+  <div class="flex space-x-1 bg-gray-100 p-1 rounded-xl max-w-md mx-auto shadow-inner">
+    <button (click)="activeTab = 'visualizations'" [ngClass]="{
+        'bg-white text-blue-600 shadow-md': activeTab === 'visualizations',
+        'text-gray-600 hover:text-gray-800': activeTab !== 'visualizations'
       }"
-      class="flex items-center justify-center space-x-2 px-4 py-2 transition-colors"
-    >
-      <svg
-        class="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <path d="M4 6h16M4 12h8m-8 6h16"></path>
+      class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all duration-200 font-medium">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+        </path>
       </svg>
-      <span>Visualizaciones</span>
+      Visualizaciones
     </button>
 
-    <button
-      (click)="activeTab = 'data'"
-      [ngClass]="{
-        'bg-blue-100 text-blue-600 font-semibold': activeTab === 'data',
-        'hover:bg-gray-100': activeTab !== 'data'
+    <button (click)="activeTab = 'data'" [ngClass]="{
+        'bg-white text-blue-600 shadow-md': activeTab === 'data',
+        'text-gray-600 hover:text-gray-800': activeTab !== 'data'
       }"
-      class="flex items-center justify-center space-x-2 px-4 py-2 transition-colors"
-    >
-      <svg
-        class="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z"
-        ></path>
+      class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all duration-200 font-medium">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5v4m8-4v4"></path>
       </svg>
-      <span>Datos</span>
+      Datos
     </button>
   </div>
 </div>
 
 <!-- Contenido de la pestaña: Datos -->
-<div *ngIf="activeTab === 'data'" class="mt-6 px-5">
-  <div class="overflow-auto max-h-[350px] rounded border border-gray-300">
-    <table
-      mat-table
-      [dataSource]="resultados"
-      class="min-w-full border-separate border-spacing-y-1 border-spacing-x-0"
-    >
-      <!-- Columnas -->
-      <ng-container matColumnDef="nombre">
-        <th
-          mat-header-cell
-          *matHeaderCellDef
-          class="bg-gray-200 px-4 py-2 text-left font-semibold text-gray-700 rounded-tl-md"
-        >
-          Nombre
-        </th>
-        <td
-          mat-cell
-          *matCellDef="let row"
-          class="px-4 py-2 border border-gray-300 bg-white even:bg-gray-50"
-        >
-          {{ row.nombre }}
-        </td>
-      </ng-container>
+<div *ngIf="activeTab === 'data'" class="animate-fade-in">
+  <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+    <!-- Header de la tabla -->
+    <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Datos de estudiantes</h3>
+          <p class="text-sm text-gray-600">{{ resultados.length || 0 }} registros encontrados</p>
+        </div>
+      </div>
+    </div>
 
-      <ng-container matColumnDef="riesgo">
-        <th
-          mat-header-cell
-          *matHeaderCellDef
-          class="bg-gray-200 px-4 py-2 text-left font-semibold text-gray-700"
-        >
-          Riesgo
-        </th>
-        <td
-          mat-cell
-          *matCellDef="let row"
-          class="px-4 py-2 border border-gray-300 bg-white even:bg-gray-50"
-        >
-          {{ row.riesgo }}
-        </td>
-      </ng-container>
+    <!-- Tabla -->
+    <div class="overflow-x-auto">
+      <div class="max-h-96 overflow-y-auto">
+        <table mat-table [dataSource]="resultados" class="w-full">
+          <!-- Columna Nombre -->
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef
+              class="bg-gray-50 px-6 py-4 text-left font-semibold text-gray-700 sticky top-0 z-10">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                Nombre del estudiante
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let row"
+              class="px-6 py-4 border-b border-gray-100 hover:bg-blue-50 transition-colors">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                  {{ row.nombre?.charAt(0)?.toUpperCase() }}
+                </div>
+                <div class="font-medium text-gray-900">{{ row.nombre }}</div>
+              </div>
+            </td>
+          </ng-container>
 
-      <tr
-        mat-header-row
-        *matHeaderRowDef="['nombre', 'riesgo']"
-        class="sticky top-0 z-10"
-      ></tr>
-      <tr
-        mat-row
-        *matRowDef="let row; columns: ['nombre', 'riesgo']"
-        class="hover:bg-blue-50 transition"
-      ></tr>
-    </table>
+          <!-- Columna Riesgo -->
+          <ng-container matColumnDef="riesgo">
+            <th mat-header-cell *matHeaderCellDef
+              class="bg-gray-50 px-6 py-4 text-left font-semibold text-gray-700 sticky top-0 z-10">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z">
+                  </path>
+                </svg>
+                Nivel de riesgo
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let row"
+              class="px-6 py-4 border-b border-gray-100 hover:bg-blue-50 transition-colors">
+              <span [ngClass]="{
+                'bg-red-100 text-red-800': row.riesgo === 'Alto',
+                'bg-yellow-100 text-yellow-800': row.riesgo === 'Medio',
+                'bg-green-100 text-green-800': row.riesgo === 'Bajo'
+              }" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium">
+                <div [ngClass]="{
+                  'bg-red-500': row.riesgo === 'Alto',
+                  'bg-yellow-500': row.riesgo === 'Medio',
+                  'bg-green-500': row.riesgo === 'Bajo'
+                }" class="w-2 h-2 rounded-full"></div>
+                {{ row.riesgo }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['nombre', 'riesgo']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['nombre', 'riesgo']" class="hover:bg-gray-50 transition-colors">
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer de la tabla -->
+    <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+      <div class="flex items-center justify-between text-sm text-gray-600">
+        <div>Mostrando {{ resultados.length || 0 }} registros</div>
+        <div class="flex items-center gap-2">
+          <button class="p-1 hover:bg-gray-200 rounded">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded">1</span>
+          <button class="p-1 hover:bg-gray-200 rounded">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <button
-    mat-raised-button
-    color="primary"
-    (click)="exportarCSV()"
-    class="mt-6"
-  >
-    Exportar resultados
-  </button>
 </div>
 
 <!-- Contenido de la pestaña: Visualizaciones -->
-<div *ngIf="activeTab === 'visualizations'" class="mt-6 px-5 mb-6">
-  <div class="mt-6 px-5 space-y-6">
-    <!-- Card de configuración -->
-    <div class="bg-white/70 backdrop-blur-sm shadow-xl border rounded-lg p-6">
-      <div class="mb-4">
-        <h3
-          class="flex items-center space-x-2 text-lg font-semibold text-blue-600"
-        >
-          <svg
-            class="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M4 6h16M4 12h8m-8 6h16" stroke-width="2"></path>
+<div *ngIf="activeTab === 'visualizations'" class="animate-fade-in">
+  <!-- Panel de configuración -->
+  <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden mb-8">
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-blue-100 rounded-lg">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+            </path>
           </svg>
-          <span>Configuración de Gráficos</span>
-        </h3>
-        <p class="text-sm text-gray-600">
-          Personaliza tus visualizaciones seleccionando variables y tipo de
-          gráfico
-        </p>
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold text-gray-800">Configuración de visualizaciones</h3>
+          <p class="text-sm text-gray-600">Personaliza los gráficos seleccionando variables y tipos de visualización</p>
+        </div>
       </div>
+    </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <!-- Tipo de gráfico -->
-        <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700"
-            >Tipo de Gráfico</label
-          >
-          <select
-            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            [(ngModel)]="chartType"
-            (ngModelChange)="onChartTypeChange()"
-          >
-            <option value="pie">Circular</option>
-            <option value="bar">Barras</option>
-            <option value="scatter">Dispersión</option>
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+              </path>
+            </svg>
+            Tipo de gráfico
+          </label>
+          <select [(ngModel)]="chartType" (ngModelChange)="onChartTypeChange()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm">
+            <option value="pie">Gráfico de pastel</option>
+            <option value="bar">Gráfico de barras</option>
+            <option value="scatter">Gráfico de dispersión</option>
           </select>
         </div>
 
         <!-- Eje X -->
-        <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700">
-            {{
-              chartType === "scatter"
-                ? "Eje X (Numérico)"
-                : "Eje X (Categorías)"
-            }}</label
-          >
-          <select
-            [(ngModel)]="selectedXAxis"
-            (change)="onXAxisChange()"
-            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          >
-            <!-- Para scatter plot, mostrar solo columnas numéricas -->
+        <div class="space-y-3">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+            </svg>
+            {{ chartType === "scatter" ? "Eje X (Numérico)" : "Eje X (Categorías)" }}
+          </label>
+          <select [(ngModel)]="selectedXAxis" (change)="onXAxisChange()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm">
             <ng-container *ngIf="chartType === 'scatter'">
               <option value="">Selecciona una variable numérica</option>
               <option *ngFor="let col of columnasNumericas" [value]="col">
                 {{ getColumnDisplayName(col) }}
               </option>
             </ng-container>
-
-            <!-- Para otros tipos de gráfico, mostrar columnas categóricas -->
             <ng-container *ngIf="chartType !== 'scatter'">
               <option *ngFor="let col of columnasCateg" [value]="col">
                 {{ getColumnDisplayName(col) }}
@@ -191,15 +218,17 @@
           </select>
         </div>
 
-        <div class="space-y-2" *ngIf="chartType === 'scatter'">
-          <label class="text-sm font-medium text-slate-700"
-            >Eje Y (Numérico)</label
-          >
-          <select
-            [(ngModel)]="selectedYAxis"
-            (change)="onChartTypeChange()"
-            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          >
+        <!-- Eje Y para scatter -->
+        <div class="space-y-3" *ngIf="chartType === 'scatter'">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+            </svg>
+            Eje Y (Numérico)
+          </label>
+          <select [(ngModel)]="selectedYAxis" (change)="onChartTypeChange()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm">
             <option value="">Selecciona una variable numérica</option>
             <option *ngFor="let col of columnasNumericas" [value]="col">
               {{ getColumnDisplayName(col) }}
@@ -207,77 +236,532 @@
           </select>
         </div>
 
-        <!-- Información adicional para scatter plot -->
-        <div class="space-y-2" *ngIf="chartType === 'scatter'">
-          <label class="text-sm font-medium text-slate-700">Información</label>
-          <div class="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-            <p><strong>Variables numéricas disponibles:</strong></p>
-            <ul class="list-disc list-inside mt-1">
-              <li *ngFor="let col of columnasNumericas">
+        <!-- Panel de información -->
+        <div class="space-y-3" *ngIf="chartType === 'scatter'">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Información
+          </label>
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <p class="text-sm font-medium text-blue-800 mb-2">Variables numéricas disponibles:</p>
+            <div class="space-y-1">
+              <div *ngFor="let col of columnasNumericas" class="flex items-center gap-2 text-sm text-blue-700">
+                <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
                 {{ getColumnDisplayName(col) }}
-              </li>
-            </ul>
-            <p class="mt-2" *ngIf="columnasNumericas.length < 2">
-              ⚠️ Se necesitan al menos 2 variables numéricas para el gráfico de
-              dispersión.
-            </p>
+              </div>
+            </div>
+            <div *ngIf="columnasNumericas.length < 2"
+              class="mt-3 p-3 bg-yellow-100 border border-yellow-200 rounded-lg">
+              <div class="flex items-center gap-2 text-yellow-800">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-sm">Se necesitan al menos 2 variables numéricas</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!--======================= GRAFICAS ===============================000 -->
-      <div class="mt-6 mb-6">
-        <!-- Grafica Pastel -->
-        <app-result-grafia-pastel
-          *ngIf="chartType === 'pie'"
-          [pieData]="pieData"
-          [view]="view"
-        ></app-result-grafia-pastel>
+  <!-- Área de visualización -->
+  <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+    <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+            </path>
+          </svg>
+          Visualización de datos
+        </h3>
+      </div>
+    </div>
 
-        <!-- GRAFICA DE BARRAS -->
+    <div class="p-6">
+      <!-- Gráfico de pastel -->
+      <div id="pie-chart" *ngIf="chartType === 'pie'" class="min-h-[400px] flex items-center justify-center">
+        <app-result-grafia-pastel [pieData]="pieData" [view]="view"></app-result-grafia-pastel>
+      </div>
 
-        <div *ngIf="chartType === 'bar'">
-          <app-result-grafica-barras
-            [barData]="barChartData"
-            [xAxisLabel]="selectedXAxis"
-            [yAxisLabel]="'Cantidad de personas'"
-          ></app-result-grafica-barras>
-        </div>
+      <!-- Gráfico de barras -->
+      <div id="bar-chart" *ngIf="chartType === 'bar'" class="min-h-[400px] flex items-center justify-center">
+        <app-result-grafica-barras [barData]="barChartData" [xAxisLabel]="selectedXAxis"
+          [yAxisLabel]="'Cantidad de personas'">
+        </app-result-grafica-barras>
+      </div>
 
-        <!-- SCATTER -->
-        <app-result-grafica-dispersion
-          *ngIf="chartType === 'scatter'"
-          [bubbleData]="bubbleChartData"
-          [xAxisLabel]="getColumnDisplayName(selectedXAxis)"
-          [yAxisLabel]="getColumnDisplayName(selectedYAxis)"
-          [view]="view"
-        ></app-result-grafica-dispersion>
+      <!-- Gráfico de dispersión -->
+      <div id="scatter-chart" *ngIf="chartType === 'scatter'" class="min-h-[400px] flex items-center justify-center">
+        <app-result-grafica-dispersion [bubbleData]="bubbleChartData" [xAxisLabel]="getColumnDisplayName(selectedXAxis)"
+          [yAxisLabel]="getColumnDisplayName(selectedYAxis)" [view]="view">
+        </app-result-grafica-dispersion>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Mensaje de advertencia si no hay suficientes variables numéricas -->
-  <div
-    *ngIf="chartType === 'scatter' && columnasNumericas.length < 2"
-    class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md"
-  >
-    <div class="flex items-center">
-      <svg
-        class="w-5 h-5 text-yellow-600 mr-2"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-          clip-rule="evenodd"
-        />
-      </svg>
-      <span class="text-yellow-800">
-        El gráfico de dispersión requiere al menos 2 variables numéricas.
-        Actualmente tienes {{ columnasNumericas.length }} variable(s)
-        numérica(s).
-      </span>
+<!-- Botón de descarga -->
+<div class="mt-8 mb-8 flex justify-center">
+  <button (click)="openDownloadModal()"
+    class="group relative inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+    <svg class="w-5 h-5 mr-3 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+    </svg>
+    Descargar datos
+    <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-200">
+    </div>
+  </button>
+</div>
+
+<!-- Modal de descarga -->
+<div *ngIf="showDownloadModal"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+    <!-- Header del modal -->
+    <div class="bg-blue-600 text-white p-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-white/20 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold">Configurar descarga</h2>
+            <p class="text-blue-100">Personalizar el archivo de exportación</p>
+          </div>
+        </div>
+        <button (click)="closeDownloadModal()" class="p-2 hover:bg-white/20 rounded-lg transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido del modal -->
+    <div class="p-6 space-y-8">
+      <!-- Sección de formato -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-blue-100 rounded-lg">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">Formato de archivo</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="relative cursor-pointer">
+            <input type="radio" [(ngModel)]="downloadConfig.format" value="excel" class="sr-only">
+            <div
+              [ngClass]="downloadConfig.format === 'excel' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'"
+              class="flex items-center gap-4 p-4 border-2 rounded-xl transition-all duration-200">
+              <div [ngClass]="downloadConfig.format === 'excel' ? 'bg-blue-500' : 'bg-gray-300'"
+                class="w-5 h-5 rounded-full flex items-center justify-center">
+                <div class="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-green-100 rounded-lg">
+                  <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-medium text-gray-900">Excel (.xlsx)</div>
+                  <div class="text-sm text-gray-500">Ideal para análisis de datos</div>
+                </div>
+              </div>
+            </div>
+          </label>
+
+          <label class="relative cursor-pointer">
+            <input type="radio" [(ngModel)]="downloadConfig.format" value="pdf" class="sr-only">
+            <div
+              [ngClass]="downloadConfig.format === 'pdf' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'"
+              class="flex items-center gap-4 p-4 border-2 rounded-xl transition-all duration-200">
+              <div [ngClass]="downloadConfig.format === 'pdf' ? 'bg-blue-500' : 'bg-gray-300'"
+                class="w-5 h-5 rounded-full flex items-center justify-center">
+                <div class="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-red-100 rounded-lg">
+                  <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-medium text-gray-900">PDF</div>
+                  <div class="text-sm text-gray-500">Perfecto para reportes</div>
+                </div>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Sección de contenido -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-purple-100 rounded-lg">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+              </path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">Contenido a Incluir</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label
+            class="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+            <input type="checkbox" [(ngModel)]="downloadConfig.includeData"
+              class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-blue-100 rounded-lg">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z">
+                  </path>
+                </svg>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900">Datos de estudiantes</div>
+                <div class="text-sm text-gray-500">Información completa de cada estudiante</div>
+              </div>
+            </div>
+          </label>
+
+          <label
+            class="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+            <input type="checkbox" [(ngModel)]="downloadConfig.includeCharts"
+              class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-green-100 rounded-lg">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                  </path>
+                </svg>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900">Gráficos</div>
+                <div class="text-sm text-gray-500">Visualizaciones generadas</div>
+              </div>
+            </div>
+          </label>
+
+          <label
+            class="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+            <input type="checkbox" [(ngModel)]="downloadConfig.includeProcessedData"
+              class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-yellow-100 rounded-lg">
+                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z">
+                  </path>
+                </svg>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900">Datos procesados</div>
+                <div class="text-sm text-gray-500">Resultados del análisis</div>
+              </div>
+            </div>
+          </label>
+
+          <label
+            class="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+            <input type="checkbox" [(ngModel)]="downloadConfig.includeSummary"
+              class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-orange-100 rounded-lg">
+                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                  </path>
+                </svg>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900">Resumen estadístico</div>
+                <div class="text-sm text-gray-500">Métricas y estadísticas clave</div>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Selección de variables -->
+      <div *ngIf="downloadConfig.includeData" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-indigo-100 rounded-lg">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                </path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800">Variables seleccionadas</h3>
+              <p class="text-sm text-gray-500">{{ getSelectedVariablesCount() }} de {{ columnasTotales.length || 0 }}
+                variables</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" (click)="toggleAllVariables(true)"
+              class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition-colors">
+              Seleccionar todas
+            </button>
+            <button type="button" (click)="toggleAllVariables(false)"
+              class="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 transition-colors">
+              Limpiar selección
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-4 bg-gray-50 rounded-xl border border-gray-200">
+          <label *ngFor="let col of columnasTotales"
+            class="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-blue-50 cursor-pointer transition-colors shadow-sm">
+            <input type="checkbox" [(ngModel)]="downloadConfig.selectedVariables[col]"
+              class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <div class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+              <span class="text-sm font-medium text-gray-900 truncate">{{ getColumnDisplayName(col) }}</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Selección de gráficos -->
+      <div *ngIf="downloadConfig.includeCharts" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-green-100 rounded-lg">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800">Gráficos a incluir</h3>
+              <p class="text-sm text-gray-500">{{ getSelectedChartsCount() }} de 3 gráficos</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" (click)="toggleAllCharts(true)"
+              class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition-colors">
+              Seleccionar todos
+            </button>
+            <button type="button" (click)="toggleAllCharts(false)"
+              class="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 transition-colors">
+              Limpiar selección
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label
+            class="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+            <input type="checkbox" [(ngModel)]="downloadConfig.selectedCharts.pie"
+              class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-blue-100 rounded-lg">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                </svg>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900">Gráfico circular</div>
+                <div class="text-sm text-gray-500">Distribución porcentual</div>
+              </div>
+            </div>
+          </label>
+
+          <label
+            class="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+            <input type="checkbox" [(ngModel)]="downloadConfig.selectedCharts.bar"
+              class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-green-100 rounded-lg">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                  </path>
+                </svg>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900">Gráfico de barras</div>
+                <div class="text-sm text-gray-500">Comparación de categorías</div>
+              </div>
+            </div>
+          </label>
+
+          <label
+            class="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+            <input type="checkbox" [(ngModel)]="downloadConfig.selectedCharts.scatter"
+              class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-purple-100 rounded-lg">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                </svg>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900">Gráfico de dispersión</div>
+                <div class="text-sm text-gray-500">Correlación entre variables</div>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Resumen de configuración -->
+      <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-200">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-blue-100 rounded-lg">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h4 class="text-lg font-semibold text-gray-800">Resumen de configuración</h4>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span class="text-gray-600">Formato:</span>
+            <span class="font-medium text-gray-900">{{ downloadConfig.format === 'excel' ? 'Excel (.xlsx)' : 'PDF'
+              }}</span>
+          </div>
+          <div *ngIf="downloadConfig.includeData" class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span class="text-gray-600">Variables:</span>
+            <span class="font-medium text-gray-900">{{ getSelectedVariablesCount() }} seleccionadas</span>
+          </div>
+          <div *ngIf="downloadConfig.includeCharts" class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+            <span class="text-gray-600">Gráficos:</span>
+            <span class="font-medium text-gray-900">{{ getSelectedChartsCount() }} seleccionados</span>
+          </div>
+          <div *ngIf="downloadConfig.includeProcessedData" class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+            <span class="text-gray-600">Datos procesados:</span>
+            <span class="font-medium text-gray-900">Incluidos</span>
+          </div>
+          <div *ngIf="downloadConfig.includeSummary" class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <span class="text-gray-600">Resumen:</span>
+            <span class="font-medium text-gray-900">Incluido</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer del modal -->
+    <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-2xl">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-600">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            El archivo se descargará automáticamente
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button (click)="closeDownloadModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+            Cancelar
+          </button>
+          <button (click)="downloadCustomFile()"
+            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Descargar archivo
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Estilos adicionales -->
+<style>
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Scrollbar personalizada */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+</style>

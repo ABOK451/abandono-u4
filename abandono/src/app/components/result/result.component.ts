@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-result',
@@ -23,6 +26,30 @@ export class ResultComponent implements OnInit {
   metadatos: any = {};
   dataList: any[] = [];
 
+  // Variables para el modal de descarga
+  showDownloadModal = false;
+  downloadConfig = {
+    format: 'excel' as 'excel' | 'pdf',
+    includeData: true,
+    includeCharts: true,
+    includeProcessedData: false,
+    includeSummary: true,
+    selectedVariables: {} as { [key: string]: boolean },
+    selectedCharts: {
+      pie: true,
+      bar: true,
+      scatter: true,
+    },
+  };
+
+  variablesSeleccionadas: { [key: string]: boolean } = {};
+  incluirOriginales = true;
+  incluirProcesados = false;
+  incluirResumen = false;
+
+  mapeoNombres: { [key: string]: string } = {};
+  columnasTotales: string[] = [];
+
   // Datos para ngx-charts
   view: [number, number] = [1050, 300];
   pieData = [
@@ -43,13 +70,20 @@ export class ResultComponent implements OnInit {
     this.metadatos = data.metadatos || {};
     this.dataList = data.descargable || [];
 
+    this.columnasTotales = [...this.columnasCateg, ...this.columnasNumericas];
+    this.columnasTotales.forEach(
+      (col) => (this.variablesSeleccionadas[col] = true)
+    );
+
     // Procesar columnas basándose en los datos reales
     this.procesarColumnas();
+    this.initializeDownloadConfig();
 
-    // Asignar valores por defecto - usar la primera columna categórica útil
-    this.selectedXAxis = this.columnasCateg.includes('sexo') ? 'sexo' : this.columnasCateg[0] || '';
+    // Asignar valores por defecto
+    this.selectedXAxis = this.columnasCateg.includes('sexo')
+      ? 'sexo'
+      : this.columnasCateg[0] || '';
 
-    // Para scatter plot, usar variables numéricas por defecto
     if (this.chartType === 'scatter') {
       this.selectedXAxis = this.columnasNumericas[0] || '';
       this.selectedYAxis =
@@ -76,13 +110,18 @@ export class ResultComponent implements OnInit {
     });
   }
 
+  private initializeDownloadConfig(): void {
+    // Inicializar variables seleccionadas
+    this.columnasTotales.forEach((col) => {
+      this.downloadConfig.selectedVariables[col] = true;
+    });
+  }
+
   private procesarColumnas(): void {
     if (this.datosOriginales.length === 0) return;
 
-    // Obtener todas las columnas
     const todasLasColumnas = Object.keys(this.datosOriginales[0]);
 
-    // Definir columnas que sabemos que son numéricas
     const columnasNumericas = [
       '¿Cuál es tu edad?',
       '¿Cuál fue tu promedio escolar en el último ciclo?',
@@ -92,16 +131,13 @@ export class ResultComponent implements OnInit {
       'faltas',
     ];
 
-    // Filtrar columnas numéricas que existen en los datos
     this.columnasNumericas = todasLasColumnas.filter((col) => {
-      // Verificar si la columna está en nuestra lista de numéricas conocidas
       const esNumericaConocida = columnasNumericas.some(
         (numCol) => col.includes(numCol) || numCol.includes(col)
       );
 
       if (esNumericaConocida) return true;
 
-      // También verificar si todos los valores son numéricos
       return this.datosOriginales.every((fila) => {
         const valor = fila[col];
         return (
@@ -113,17 +149,15 @@ export class ResultComponent implements OnInit {
       });
     });
 
-    // Columnas que NO queremos mostrar en las visualizaciones
     const columnasExcluidas = [
       'Marca temporal',
       'Nombre',
       'nombre',
-      'riesgo', // Esta ya está implícita en todas las visualizaciones
-      'abandona', // Es redundante con riesgo
+      'riesgo',
+      'abandona',
       'timestamp',
     ];
 
-    // Las columnas categóricas son todas las demás, excluyendo las numéricas y las excluidas
     this.columnasCateg = todasLasColumnas.filter((col) => {
       return (
         !this.columnasNumericas.includes(col) &&
@@ -133,11 +167,8 @@ export class ResultComponent implements OnInit {
       );
     });
 
-    console.log('Columnas procesadas:', {
-      numericas: this.columnasNumericas,
-      categoricas: this.columnasCateg,
-      excluidas: columnasExcluidas,
-    });
+    // Actualizar columnas totales
+    this.columnasTotales = [...this.columnasCateg, ...this.columnasNumericas];
   }
 
   private updateChartData(): void {
@@ -156,11 +187,347 @@ export class ResultComponent implements OnInit {
     }
   }
 
+  // Métodos del modal de descarga
+  openDownloadModal(): void {
+    this.showDownloadModal = true;
+  }
+
+  closeDownloadModal(): void {
+    this.showDownloadModal = false;
+  }
+
+  toggleAllVariables(selected: boolean): void {
+    Object.keys(this.downloadConfig.selectedVariables).forEach((key) => {
+      this.downloadConfig.selectedVariables[key] = selected;
+    });
+  }
+
+  toggleAllCharts(selected: boolean): void {
+    Object.keys(this.downloadConfig.selectedCharts).forEach((key) => {
+      this.downloadConfig.selectedCharts[
+        key as keyof typeof this.downloadConfig.selectedCharts
+      ] = selected;
+    });
+  }
+
+  getSelectedVariablesCount(): number {
+    return Object.values(this.downloadConfig.selectedVariables).filter(Boolean)
+      .length;
+  }
+
+  getSelectedChartsCount(): number {
+    return Object.values(this.downloadConfig.selectedCharts).filter(Boolean)
+      .length;
+  }
+
+  async downloadCustomFile(): Promise<void> {
+    try {
+      if (this.downloadConfig.format === 'excel') {
+        await this.downloadExcel();
+      } else {
+        await this.downloadPDF();
+      }
+      this.closeDownloadModal();
+    } catch (error) {
+      console.error('Error al descargar archivo:', error);
+      alert('Error al generar el archivo. Inténtalo de nuevo.');
+    }
+  }
+
+  private async downloadExcel(): Promise<void> {
+    const workbook = XLSX.utils.book_new();
+
+    // Agregar datos si está seleccionado
+    if (this.downloadConfig.includeData) {
+      const selectedColumns = Object.entries(
+        this.downloadConfig.selectedVariables
+      )
+        .filter(([_, selected]) => selected)
+        .map(([col]) => col);
+
+      const dataToExport = this.datosOriginales.map((row) => {
+        const filteredRow: any = {};
+        selectedColumns.forEach((col) => {
+          filteredRow[this.getColumnDisplayName(col)] = row[col] || '';
+        });
+        filteredRow['Riesgo'] = row['riesgo'] || '';
+        return filteredRow;
+      });
+
+      const dataWorksheet = XLSX.utils.json_to_sheet(dataToExport);
+      XLSX.utils.book_append_sheet(workbook, dataWorksheet, 'Datos');
+    }
+
+    // Agregar datos procesados si está seleccionado
+    if (
+      this.downloadConfig.includeProcessedData &&
+      this.datosProcesados.length > 0
+    ) {
+      const processedWorksheet = XLSX.utils.json_to_sheet(this.datosProcesados);
+      XLSX.utils.book_append_sheet(
+        workbook,
+        processedWorksheet,
+        'Datos Procesados'
+      );
+    }
+
+    // Agregar resumen si está seleccionado
+    if (this.downloadConfig.includeSummary) {
+      const summaryData = [
+        { Métrica: 'Total de estudiantes', Valor: this.resumen?.total || 0 },
+        { Métrica: 'En riesgo', Valor: this.resumen?.en_riesgo || 0 },
+        { Métrica: 'Sin riesgo', Valor: this.resumen?.sin_riesgo || 0 },
+        {
+          Métrica: 'Porcentaje en riesgo',
+          Valor: `${(
+            ((this.resumen?.en_riesgo || 0) / (this.resumen?.total || 1)) *
+            100
+          ).toFixed(1)}%`,
+        },
+      ];
+      const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Resumen');
+    }
+
+    // Agregar datos de gráficos si está seleccionado
+    if (this.downloadConfig.includeCharts) {
+      if (this.downloadConfig.selectedCharts.pie && this.pieData.length > 0) {
+        const pieWorksheet = XLSX.utils.json_to_sheet(this.pieData);
+        XLSX.utils.book_append_sheet(
+          workbook,
+          pieWorksheet,
+          'Gráfico Circular'
+        );
+      }
+
+      if (
+        this.downloadConfig.selectedCharts.bar &&
+        this.barChartData.length > 0
+      ) {
+        const barWorksheet = XLSX.utils.json_to_sheet(this.barChartData);
+        XLSX.utils.book_append_sheet(workbook, barWorksheet, 'Gráfico Barras');
+      }
+
+      if (
+        this.downloadConfig.selectedCharts.scatter &&
+        this.bubbleChartData.length > 0
+      ) {
+        const scatterData = this.bubbleChartData.flatMap((series) =>
+          series.series.map((point: any) => ({
+            Grupo: series.name,
+            Nombre: point.name,
+            [this.getColumnDisplayName(this.selectedXAxis)]: point.x,
+            [this.getColumnDisplayName(this.selectedYAxis)]: point.y,
+          }))
+        );
+        const scatterWorksheet = XLSX.utils.json_to_sheet(scatterData);
+        XLSX.utils.book_append_sheet(
+          workbook,
+          scatterWorksheet,
+          'Gráfico Dispersión'
+        );
+      }
+    }
+
+    // Descargar archivo
+    XLSX.writeFile(
+      workbook,
+      `reporte_prediccion_abandono_${
+        new Date().toISOString().split('T')[0]
+      }.xlsx`
+    );
+  }
+
+  private async downloadPDF(): Promise<void> {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    let yPosition = 20;
+
+    // Título
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Reporte de Predicción de Abandono Escolar', 20, yPosition);
+    yPosition += 10;
+
+    // Fecha
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, yPosition);
+    yPosition += 15;
+
+    // Resumen si está seleccionado
+    if (this.downloadConfig.includeSummary) {
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Resumen Ejecutivo', 20, yPosition);
+      yPosition += 8;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(
+        `Total de estudiantes: ${this.resumen?.total || 0}`,
+        20,
+        yPosition
+      );
+      yPosition += 5;
+      pdf.text(`En riesgo: ${this.resumen?.en_riesgo || 0}`, 20, yPosition);
+      yPosition += 5;
+      pdf.text(`Sin riesgo: ${this.resumen?.sin_riesgo || 0}`, 20, yPosition);
+      yPosition += 5;
+      pdf.text(
+        `Porcentaje en riesgo: ${(
+          ((this.resumen?.en_riesgo || 0) / (this.resumen?.total || 1)) *
+          100
+        ).toFixed(1)}%`,
+        20,
+        yPosition
+      );
+      yPosition += 15;
+    }
+
+    // Agregar gráficos si están seleccionados
+    if (this.downloadConfig.includeCharts) {
+      if (this.downloadConfig.selectedCharts.pie) {
+        await this.addChartToPDF(
+          pdf,
+          'pie-chart',
+          'Gráfico Circular',
+          yPosition
+        );
+        yPosition += 80;
+      }
+
+      if (this.downloadConfig.selectedCharts.bar) {
+        await this.addChartToPDF(
+          pdf,
+          'bar-chart',
+          'Gráfico de Barras',
+          yPosition
+        );
+        yPosition += 80;
+      }
+
+      if (this.downloadConfig.selectedCharts.scatter) {
+        await this.addChartToPDF(
+          pdf,
+          'scatter-chart',
+          'Gráfico de Dispersión',
+          yPosition
+        );
+        yPosition += 80;
+      }
+    }
+
+    // Agregar tabla de datos si está seleccionado
+    if (this.downloadConfig.includeData) {
+      const selectedColumns = Object.entries(
+        this.downloadConfig.selectedVariables
+      )
+        .filter(([_, selected]) => selected)
+        .map(([col]) => col);
+
+      if (yPosition > 200) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Datos de estudiantes', 20, yPosition);
+      yPosition += 10;
+
+      // Agregar tabla (implementación simplificada)
+      const tableData = this.datosOriginales.slice(0, 10).map((row) => {
+        const filteredRow: string[] = [];
+        selectedColumns.slice(0, 3).forEach((col) => {
+          // Limitar a 3 columnas por espacio
+          filteredRow.push(String(row[col] || ''));
+        });
+        filteredRow.push(String(row['riesgo'] || ''));
+        return filteredRow;
+      });
+
+      const headers = selectedColumns
+        .slice(0, 3)
+        .map((col) => this.getColumnDisplayName(col));
+      headers.push('Riesgo');
+
+      // Agregar encabezados
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'bold');
+      headers.forEach((header, index) => {
+        pdf.text(header, 20 + index * 40, yPosition);
+      });
+      yPosition += 5;
+
+      // Agregar datos
+      pdf.setFont('helvetica', 'normal');
+      tableData.forEach((row) => {
+        row.forEach((cell, index) => {
+          pdf.text(String(cell).substring(0, 15), 20 + index * 40, yPosition);
+        });
+        yPosition += 4;
+      });
+
+      if (this.datosOriginales.length > 10) {
+        pdf.text(
+          `... y ${this.datosOriginales.length - 10} registros más`,
+          20,
+          yPosition + 5
+        );
+      }
+    }
+
+    // Descargar PDF
+    pdf.save(
+      `reporte_prediccion_abandono_${
+        new Date().toISOString().split('T')[0]
+      }.pdf`
+    );
+  }
+
+  private async addChartToPDF(
+    pdf: jsPDF,
+    chartId: string,
+    title: string,
+    yPosition: number
+  ): Promise<void> {
+    try {
+      const chartElement = document.getElementById(chartId);
+      if (chartElement) {
+        const canvas = await html2canvas(chartElement, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 150;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(title, 20, yPosition);
+
+        pdf.addImage(
+          imgData,
+          'PNG',
+          20,
+          yPosition + 5,
+          imgWidth,
+          Math.min(imgHeight, 70)
+        );
+      }
+    } catch (error) {
+      console.error(`Error al capturar gráfico ${chartId}:`, error);
+    }
+  }
+
+  // Métodos existentes (mantener los que ya funcionan)
   exportarCSV(): void {
     if (this.resultados.length === 0) return;
 
     const csvContent = [
-      Object.keys(this.resultados[0]).join(','), // encabezado
+      Object.keys(this.resultados[0]).join(','),
       ...this.resultados.map((r) => Object.values(r).join(',')),
     ].join('\n');
 
@@ -172,14 +539,13 @@ export class ResultComponent implements OnInit {
   }
 
   getColumnDisplayName(column: string): string {
-  return column
-    .replace(/_/g, ' ')                 
-    .replace(/\b\w/g, l => l.toUpperCase())
-    .trim();
+    return column
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase())
+      .trim();
   }
 
   onChartTypeChange(): void {
-    // Si cambia a scatter, asegurar que ambos ejes sean numéricos
     if (this.chartType === 'scatter') {
       if (!this.columnasNumericas.includes(this.selectedXAxis)) {
         this.selectedXAxis = this.columnasNumericas[0] || '';
@@ -192,7 +558,6 @@ export class ResultComponent implements OnInit {
           this.columnasNumericas[1] || this.columnasNumericas[0] || '';
       }
     } else {
-      // Para otros tipos de gráfico, usar columnas categóricas
       if (!this.columnasCateg.includes(this.selectedXAxis)) {
         this.selectedXAxis = this.columnasCateg[0] || '';
       }
@@ -216,6 +581,7 @@ export class ResultComponent implements OnInit {
     return isNaN(numeroConvertido) ? null : numeroConvertido;
   }
 
+  // Métodos de generación de datos (mantener los existentes)
   generarDistribucionPorCategoria(): void {
     if (!this.selectedXAxis || this.datosOriginales.length === 0) {
       this.barChartData = [];
@@ -251,8 +617,6 @@ export class ResultComponent implements OnInit {
         value: sinRiesgo,
       });
     }
-
-    console.log('Distribución generada:', this.barChartData);
   }
 
   generarPieDataPorCategoriaYCategoriaRiesgo(): void {
@@ -278,10 +642,7 @@ export class ResultComponent implements OnInit {
       this.pieData.push({ name: key, value: cantidad });
     }
 
-    // Ordenar para que se vea ordenado
     this.pieData.sort((a, b) => b.value - a.value);
-
-    console.log('Datos pie por categoría y riesgo:', this.pieData);
   }
 
   generarBubbleChartData(): void {
@@ -294,22 +655,13 @@ export class ResultComponent implements OnInit {
       return;
     }
 
-    // VALIDACIÓN: Verificar que ambas variables sean numéricas
     if (
       !this.columnasNumericas.includes(this.selectedXAxis) ||
       !this.columnasNumericas.includes(this.selectedYAxis)
     ) {
-      console.warn('Ambas variables deben ser numéricas para el scatter plot');
       this.bubbleChartData = [];
       return;
     }
-
-    console.log(
-      'Generando scatter plot para:',
-      this.selectedXAxis,
-      'vs',
-      this.selectedYAxis
-    );
 
     const puntos = [];
 
@@ -319,9 +671,7 @@ export class ResultComponent implements OnInit {
       const xVal = this.obtenerValorNumerico(fila, this.selectedXAxis);
       const yVal = this.obtenerValorNumerico(fila, this.selectedYAxis);
 
-      // Solo agregar puntos con valores numéricos válidos
       if (xVal !== null && yVal !== null) {
-        // Determinar el riesgo
         let riesgo = 'Sin riesgo';
         if (
           fila['riesgo'] === 'En riesgo de abandono' ||
@@ -338,21 +688,12 @@ export class ResultComponent implements OnInit {
           name: nombre,
           x: xVal,
           y: yVal,
-          r: 12, // Radio fijo
+          r: 12,
           riesgo: riesgo,
         });
       }
     }
 
-    console.log('Puntos generados:', puntos);
-
-    if (puntos.length === 0) {
-      console.warn('No se generaron puntos válidos. Verifica los datos.');
-      this.bubbleChartData = [];
-      return;
-    }
-
-    // Agrupar puntos por riesgo
     const puntosEnRiesgo = puntos.filter((p) => p.riesgo === 'En riesgo');
     const puntosSinRiesgo = puntos.filter((p) => p.riesgo === 'Sin riesgo');
 
@@ -381,7 +722,5 @@ export class ResultComponent implements OnInit {
         })),
       });
     }
-
-    console.log('Datos finales para bubble chart:', this.bubbleChartData);
   }
 }
