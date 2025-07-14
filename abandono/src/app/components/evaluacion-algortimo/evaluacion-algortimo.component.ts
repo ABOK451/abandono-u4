@@ -9,4 +9,6 @@ import { Component } from '@angular/core';
 export class EvaluacionAlgortimoComponent {
   metricas = JSON.parse(localStorage.getItem('resultados')!)
     ?.metricas_evaluacion;
+
+  
 }

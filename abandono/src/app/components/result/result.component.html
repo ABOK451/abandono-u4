@@ -1291,43 +1291,117 @@
       Detalles de {{ estudianteSeleccionado?.nombre }}
     </h2>
 
-    <ul class="space-y-4 text-gray-700 text-base">
+    <ul class="space-y-3 text-gray-700 text-base">
       <li>
-        <span class="font-semibold text-gray-900">Promedio:</span>
-        <span>{{ estudianteSeleccionado?.promedio }}</span>
+        <strong class="text-gray-800">Edad:</strong>
+        <span class="text-blue-600 font-medium">{{
+          estudianteSeleccionado?.edad
+        }}</span>
       </li>
       <li>
-        <span class="font-semibold text-gray-900">Faltas:</span>
-        <span>{{ estudianteSeleccionado?.faltas }}</span>
+        <strong class="text-gray-800">Sexo:</strong>
+        <span class="text-blue-600 font-medium">{{
+          estudianteSeleccionado?.sexo
+        }}</span>
       </li>
       <li>
-        <span class="font-semibold text-gray-900">Motivado:</span>
+        <strong class="text-gray-800">Promedio:</strong>
         <span
           [ngClass]="
-            esSi(estudianteSeleccionado?.motivacion)
+            estudianteSeleccionado?.promedio >= 9
+              ? 'text-green-600 font-semibold'
+              : estudianteSeleccionado?.promedio >= 7
+              ? 'text-yellow-600 font-semibold'
+              : 'text-red-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.promedio }}
+        </span>
+      </li>
+      <li>
+        <strong class="text-gray-800">Rendimiento académico:</strong>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.rendimiento === 'Excelente' ||
+            estudianteSeleccionado?.rendimiento === 'Bueno'
+              ? 'text-green-600 font-semibold'
+              : estudianteSeleccionado?.rendimiento === 'Regular'
+              ? 'text-yellow-600 font-semibold'
+              : 'text-red-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.rendimiento }}
+        </span>
+      </li>
+      <li>
+        <strong class="text-gray-800">Faltas:</strong>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.faltas <= 3
+              ? 'text-green-600 font-semibold'
+              : estudianteSeleccionado?.faltas <= 7
+              ? 'text-yellow-600 font-semibold'
+              : 'text-red-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.faltas }}
+        </span>
+      </li>
+      <li>
+        <strong class="text-gray-800">¿Trabaja?:</strong>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.trabajo === 'Sí'
+              ? 'text-orange-600 font-semibold'
+              : 'text-green-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.trabajo }}
+        </span>
+      </li>
+      <li>
+        <strong class="text-gray-800">Nivel socioeconómico:</strong>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.socioeconomico === 'Alto'
+              ? 'text-green-600 font-semibold'
+              : estudianteSeleccionado?.socioeconomico === 'Medio'
+              ? 'text-yellow-600 font-semibold'
+              : 'text-red-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.socioeconomico }}
+        </span>
+      </li>
+      <li>
+        <strong class="text-gray-800">Apoyo familiar:</strong>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.apoyo_familiar === 'Excelente' ||
+            estudianteSeleccionado?.apoyo_familiar === 'Suficiente'
+              ? 'text-green-600 font-semibold'
+              : estudianteSeleccionado?.apoyo_familiar === 'Regular'
+              ? 'text-yellow-600 font-semibold'
+              : 'text-red-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.apoyo_familiar }}
+        </span>
+      </li>
+      <li>
+        <strong class="text-gray-800">Acceso a internet:</strong>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.internet === 'Sí'
               ? 'text-green-600 font-semibold'
               : 'text-red-600 font-semibold'
           "
         >
-          {{ esSi(estudianteSeleccionado?.motivacion) ? "Sí" : "No" }}
+          {{ estudianteSeleccionado?.internet }}
         </span>
       </li>
       <li>
-        <span class="font-semibold text-gray-900"
-          >Ha pensado en abandonar:</span
-        >
-        <span
-          [ngClass]="
-            estudianteSeleccionado?.abandono_pensado === 'Sí'
-              ? 'text-red-600 font-semibold'
-              : 'text-green-600 font-semibold'
-          "
-        >
-          {{ estudianteSeleccionado?.abandono_pensado }}
-        </span>
-      </li>
-      <li>
-        <span class="font-semibold text-gray-900">Problemas emocionales:</span>
+        <strong class="text-gray-800">Problemas emocionales:</strong>
         <span
           [ngClass]="
             estudianteSeleccionado?.problemas_emocionales === 'Sí'
@@ -1339,12 +1413,62 @@
         </span>
       </li>
       <li>
-        <span class="font-semibold text-gray-900">Riesgo:</span>
+        <strong class="text-gray-800">Motivado:</strong>
+        <span
+          [ngClass]="
+            esSi(estudianteSeleccionado?.motivacion)
+              ? 'text-green-600 font-semibold'
+              : 'text-red-600 font-semibold'
+          "
+        >
+          {{ esSi(estudianteSeleccionado?.motivacion) ? "Sí" : "No" }}
+        </span>
+      </li>
+      <li>
+        <strong class="text-gray-800">Ha pensado en abandonar:</strong>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.abandono_pensado === 'Sí'
+              ? 'text-red-600 font-semibold'
+              : 'text-green-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.abandono_pensado }}
+        </span>
+      </li>
+      <li>
+        <strong class="text-gray-800">Actividades extracurriculares:</strong>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.actividades === 'Sí'
+              ? 'text-green-600 font-semibold'
+              : 'text-orange-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.actividades }}
+        </span>
+      </li>
+      <li>
+        <strong class="text-gray-800">Problemas de transporte:</strong>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.transporte === 'Sí'
+              ? 'text-red-600 font-semibold'
+              : 'text-green-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.transporte }}
+        </span>
+      </li>
+
+      <!-- Campo de riesgo calculado -->
+      <li class="pt-2 border-t border-gray-100">
+        <strong class="text-gray-800">Riesgo:</strong>
         <span
           [ngClass]="
             estaEnRiesgoPersonalizado(estudianteSeleccionado)
-              ? 'text-red-600 font-semibold'
-              : 'text-green-600 font-semibold'
+              ? 'text-red-600 font-bold bg-red-50 px-2 py-1 rounded'
+              : 'text-green-600 font-bold bg-green-50 px-2 py-1 rounded'
           "
         >
           {{
@@ -1358,7 +1482,7 @@
 
     <button
       (click)="cerrarModal()"
-      class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-full"
+      class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-full p-1 transition-colors"
       aria-label="Cerrar modal"
     >
       <svg

@@ -80,7 +80,11 @@ export class ResultComponent implements OnInit {
   }
 
   esSi(valor: any): boolean {
-    return valor === 'Sí' || valor === 1 || valor === true;
+    return (
+      String(valor).trim().toLowerCase() === 'sí' ||
+      valor === 1 ||
+      valor === true
+    );
   }
 
   cerrarModal() {
@@ -88,30 +92,51 @@ export class ResultComponent implements OnInit {
     this.estudianteSeleccionado = null;
   }
 
-  estaEnRiesgoPersonalizado(estudiante: any): boolean {
-    const promedio = parseFloat(estudiante.promedio);
-    const faltas = parseInt(estudiante.faltas, 10);
+ estaEnRiesgoPersonalizado(estudiante: any): boolean {
+  let condiciones = 0;
 
-    let condiciones = 0;
+  const promedio = parseFloat(estudiante.promedio);
+  const faltas = parseInt(estudiante.faltas, 10);
 
-    // 1. Promedio menor a 8.0
-    if (!isNaN(promedio) && promedio < 8.0) condiciones++;
+  // 1. Promedio menor a 8.0
+  if (!isNaN(promedio) && promedio < 8.0) condiciones++;
 
-    // 2. Faltas 5 o más
-    if (!isNaN(faltas) && faltas >= 5) condiciones++;
+  // 2. Faltas 5 o más
+  if (!isNaN(faltas) && faltas >= 5) condiciones++;
 
-    // 3. NO está motivado
-    if (!this.esSi(estudiante.motivacion)) condiciones++;
+  // 3. NO está motivado
+  if (!this.esSi(estudiante.motivacion)) condiciones++;
 
-    // 4. Ha pensado en abandonar
-    if (this.esSi(estudiante.abandono_pensado)) condiciones++;
+  // 4. Ha pensado en abandonar
+  if (this.esSi(estudiante.abandono_pensado)) condiciones++;
 
-    // 5. Tiene problemas emocionales
-    if (this.esSi(estudiante.problemas_emocionales)) condiciones++;
+  // 5. Tiene problemas emocionales
+  if (this.esSi(estudiante.problemas_emocionales)) condiciones++;
 
-    // Al menos 3 condiciones cumplidas = En riesgo
-    return condiciones >= 3;
-  }
+  // 6. Rendimiento malo o regular
+  const rendimiento = estudiante.rendimiento_academico?.toLowerCase();
+  if (rendimiento === 'malo' || rendimiento === 'regular') condiciones++;
+
+  // 7. Poco apoyo familiar
+  const apoyo = estudiante.apoyo_familiar?.toLowerCase();
+  if (apoyo === 'poco' || apoyo === 'nulo') condiciones++;
+
+  // 8. Sin acceso a internet
+  if (!this.esSi(estudiante.acceso_internet)) condiciones++;
+
+  // 9. No participa en actividades extracurriculares
+  if (!this.esSi(estudiante.actividades_extracurriculares)) condiciones++;
+
+  // 10. Tiene problemas de transporte
+  if (this.esSi(estudiante.problemas_transporte)) condiciones++;
+
+  // 11. Trabaja mientras estudia
+  if (this.esSi(estudiante.trabajo)) condiciones++;
+
+  // Si cumple al menos 6 de estas señales, se considera en riesgo
+  return condiciones >= 6;
+}
+
 
   ngOnInit(): void {
     const data = JSON.parse(localStorage.getItem('resultados') || '{}');
