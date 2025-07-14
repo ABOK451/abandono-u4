@@ -25,6 +25,8 @@ export class ResultComponent implements OnInit {
   resumen: any;
   metadatos: any = {};
   dataList: any[] = [];
+  filtroRiesgo: 'todos' | 'en_riesgo' | 'sin_riesgo' = 'todos';
+  resultadosFiltrados: any[] = [];
 
   // Variables para el modal de descarga
   showDownloadModal = false;
@@ -62,13 +64,21 @@ export class ResultComponent implements OnInit {
   ngOnInit(): void {
     const data = JSON.parse(localStorage.getItem('resultados') || '{}');
 
-    // Cargar datos del backend mejorado
+    const resumenString = localStorage.getItem('resumen');
+    if (resumenString) {
+      this.resumen = JSON.parse(resumenString);
+    }
+
+    // Cargar datos del backend mejorado PRIMERO
     this.resultados = data.resultados || [];
     this.datosOriginales = data.datos_originales || [];
     this.datosProcesados = data.datos_procesados || [];
     this.resumen = data.resumen || {};
     this.metadatos = data.metadatos || {};
     this.dataList = data.descargable || [];
+
+    // AHORA aplicar el filtro cuando ya tenemos los datos
+    this.aplicarFiltro();
 
     this.columnasTotales = [...this.columnasCateg, ...this.columnasNumericas];
     this.columnasTotales.forEach(
@@ -84,14 +94,8 @@ export class ResultComponent implements OnInit {
       ? 'sexo'
       : this.columnasCateg[0] || '';
 
-/*     if (this.chartType === 'scatter') {
-      this.selectedXAxis = this.columnasNumericas[0] || '';
-      this.selectedYAxis =
-        this.columnasNumericas[1] || this.columnasNumericas[0] || '';
-    }
-
-    // Generar datos iniciales*/
-    this.updateChartData(); 
+    // Generar datos iniciales
+    this.updateChartData();
 
     // Configurar gráfica de pastel
     const enRiesgo = this.resumen?.en_riesgo || 0;
@@ -107,7 +111,43 @@ export class ResultComponent implements OnInit {
       columnas_numericas: this.columnasNumericas,
       eje_x: this.selectedXAxis,
       eje_y: this.selectedYAxis,
+      resultados_totales: this.resultados.length,
+      resultados_filtrados: this.resultadosFiltrados.length,
     });
+  }
+
+  aplicarFiltro() {
+    console.log('Filtro activo:', this.filtroRiesgo);
+    console.log(
+      'Riesgos en datos:',
+      this.resultados.map((r) => r.riesgo)
+    );
+
+    if (this.filtroRiesgo === 'en_riesgo') {
+      this.resultadosFiltrados = this.resultados.filter(
+        (r) =>
+          r.riesgo === 'En riesgo de abandono' ||
+          r.riesgo === 'En riesgo' ||
+          r.riesgo === 'alto' || // por si hay algún otro valor
+          r.riesgo === 'Alto'
+      );
+    } else if (this.filtroRiesgo === 'sin_riesgo') {
+      this.resultadosFiltrados = this.resultados.filter(
+        (r) =>
+          r.riesgo === 'Sin riesgo' ||
+          r.riesgo === 'Bajo' ||
+          r.riesgo === 'bajo'
+      );
+    } else {
+      this.resultadosFiltrados = this.resultados;
+    }
+
+    console.log('Filtrados:', this.resultadosFiltrados);
+  }
+
+  cambiarFiltro(filtro: 'todos' | 'en_riesgo' | 'sin_riesgo') {
+    this.filtroRiesgo = filtro;
+    this.aplicarFiltro();
   }
 
   private initializeDownloadConfig(): void {
@@ -567,7 +607,7 @@ export class ResultComponent implements OnInit {
     this.updateChartData();
   }
 
-/*   private obtenerValorNumerico(fila: any, columna: string): number | null {
+  /*   private obtenerValorNumerico(fila: any, columna: string): number | null {
     const valor = fila[columna];
 
     if (valor === null || valor === undefined || valor === '') {
@@ -642,7 +682,7 @@ export class ResultComponent implements OnInit {
     this.pieData.sort((a, b) => b.value - a.value);
   }
 
-/*   generarBubbleChartData(): void {
+  /*   generarBubbleChartData(): void {
     if (
       !this.selectedXAxis ||
       !this.selectedYAxis ||
