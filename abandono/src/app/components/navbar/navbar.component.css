@@ -1,0 +1,102 @@
+/* Animaciones personalizadas */
+.navbar-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Animación para el menú móvil */
+.mobile-menu-enter {
+  animation: slideDown 0.3s ease-out;
+}
+
+.mobile-menu-leave {
+  animation: slideUp 0.3s ease-in;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Efectos hover para botones */
+.nav-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.nav-button:hover::before {
+  left: 100%;
+}
+
+/* Animación para el icono de hamburguesa */
+.hamburger-icon {
+  transition: transform 0.3s ease;
+}
+
+.hamburger-icon.active {
+  transform: rotate(90deg);
+}
+
+/* Backdrop blur para Safari */
+.backdrop-blur-safari {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Estilos responsivos mejorados */
+@media (max-width: 768px) {
+  .mobile-menu {
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+}
+
+/* Scrollbar personalizada para móvil */
+.mobile-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mobile-menu::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.mobile-menu::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.mobile-menu::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

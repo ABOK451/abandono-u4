@@ -84,14 +84,14 @@ export class ResultComponent implements OnInit {
       ? 'sexo'
       : this.columnasCateg[0] || '';
 
-    if (this.chartType === 'scatter') {
+/*     if (this.chartType === 'scatter') {
       this.selectedXAxis = this.columnasNumericas[0] || '';
       this.selectedYAxis =
         this.columnasNumericas[1] || this.columnasNumericas[0] || '';
     }
 
-    // Generar datos iniciales
-    this.updateChartData();
+    // Generar datos iniciales*/
+    this.updateChartData(); 
 
     // Configurar gráfica de pastel
     const enRiesgo = this.resumen?.en_riesgo || 0;
@@ -178,9 +178,6 @@ export class ResultComponent implements OnInit {
         break;
       case 'bar':
         this.generarDistribucionPorCategoria();
-        break;
-      case 'scatter':
-        this.generarBubbleChartData();
         break;
       default:
         break;
@@ -570,7 +567,7 @@ export class ResultComponent implements OnInit {
     this.updateChartData();
   }
 
-  private obtenerValorNumerico(fila: any, columna: string): number | null {
+/*   private obtenerValorNumerico(fila: any, columna: string): number | null {
     const valor = fila[columna];
 
     if (valor === null || valor === undefined || valor === '') {
@@ -579,7 +576,7 @@ export class ResultComponent implements OnInit {
 
     const numeroConvertido = Number(valor);
     return isNaN(numeroConvertido) ? null : numeroConvertido;
-  }
+  } */
 
   // Métodos de generación de datos (mantener los existentes)
   generarDistribucionPorCategoria(): void {
@@ -645,7 +642,7 @@ export class ResultComponent implements OnInit {
     this.pieData.sort((a, b) => b.value - a.value);
   }
 
-  generarBubbleChartData(): void {
+/*   generarBubbleChartData(): void {
     if (
       !this.selectedXAxis ||
       !this.selectedYAxis ||
@@ -722,5 +719,5 @@ export class ResultComponent implements OnInit {
         })),
       });
     }
-  }
+  } */
 }

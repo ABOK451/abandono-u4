@@ -24,6 +24,8 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { ResultGrafiaPastelComponent } from './components/graficas/result-grafia-pastel/result-grafia-pastel.component';
 import { ResultGraficaBarrasComponent } from './components/graficas/result-grafica-barras/result-grafica-barras.component';
 import { ResultGraficaDispersionComponent } from './components/graficas/result-grafica-dispersion/result-grafica-dispersion.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { EvaluacionAlgortimoComponent } from './components/evaluacion-algortimo/evaluacion-algortimo.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -32,7 +34,9 @@ import { ResultGraficaDispersionComponent } from './components/graficas/result-g
     HomeComponent,
     ResultGrafiaPastelComponent,
     ResultGraficaBarrasComponent,
-    ResultGraficaDispersionComponent
+    ResultGraficaDispersionComponent,
+    NavbarComponent,
+    EvaluacionAlgortimoComponent
   ],
   imports: [
     BrowserModule,

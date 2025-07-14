@@ -7,75 +7,85 @@ import { Component, Input } from '@angular/core';
   styleUrl: './result-grafica-dispersion.component.css',
 })
 export class ResultGraficaDispersionComponent {
-  @Input() bubbleData: any[] = [];
   @Input() view: [number, number] = [700, 400];
-  @Input() xAxisLabel: string = 'Eje X';
-  @Input() yAxisLabel: string = 'Eje Y';
-  
-  // Option 1: Make them required with default values
-  @Input() xScaleMin: number = 0;
-  @Input() xScaleMax: number = 100;
-  @Input() yScaleMin: number = 0;
-  @Input() yScaleMax: number = 100;
+  bubbleChartData: any[] = [];
 
-  // Fix the color scheme - use a predefined scheme name
+  // Escalas calculadas
+  xScaleMin = 0;
+  xScaleMax = 100;
+  yScaleMin = 0;
+  yScaleMax = 100;
+
   colorScheme = 'cool';
 
-  // Alternative: Define as proper Color object
-  // colorScheme = {
-  //   name: 'custom',
-  //   selectable: true,
-  //   group: 'Ordinal',
-  //   domain: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
-  // };
+  varianzaExplicada: number[] = [];
+  varianzaTotal: number = 0;
 
-  onSelect(event: any) {
+  get hasValidData(): boolean {
+    return this.bubbleChartData.length > 0;
+  }
+
+  onSelect(event: any): void {
     console.log('Punto seleccionado:', event);
   }
 
-  // Getter para verificar si hay datos válidos
-  get hasValidData(): boolean {
-    return (
-      this.bubbleData &&
-      this.bubbleData.length > 0 &&
-      this.bubbleData.some(
-        (series) => series.series && series.series.length > 0
-      )
-    );
+  ngOnInit() {
+    const stored = JSON.parse(localStorage.getItem('resultados') || '{}');
+    const datosPCA = stored.pca_visualization?.datos_pca || [];
+
+    this.varianzaExplicada = stored.pca_visualization?.varianza_explicada || [];
+    this.varianzaTotal =
+      stored.pca_visualization?.varianza_total_explicada || 0;
+
+    this.bubbleChartData = this.convertirDatosPCA(datosPCA);
+    this.calcularEscalas();
   }
 
-  // Helper method to calculate scale limits dynamically
-  private calculateScaleLimits() {
-    if (!this.hasValidData) return;
+  convertirDatosPCA(datos: any[]): any[] {
+    const puntosPorCluster: { [key: string]: any[] } = {};
 
-    const allXValues: number[] = [];
-    const allYValues: number[] = [];
+    for (const punto of datos) {
+      const cluster = punto.cluster;
+      if (!puntosPorCluster[cluster]) puntosPorCluster[cluster] = [];
 
-    this.bubbleData.forEach(series => {
-      series.series?.forEach((point: any) => {
-        if (typeof point.x === 'number') allXValues.push(point.x);
-        if (typeof point.y === 'number') allYValues.push(point.y);
+      puntosPorCluster[cluster].push({
+        name: punto.nombre || `Punto`,
+        x: punto.x,
+        y: punto.y,
+        r: 12,
       });
-    });
-
-    if (allXValues.length > 0) {
-      const xMin = Math.min(...allXValues);
-      const xMax = Math.max(...allXValues);
-      const xPadding = (xMax - xMin) * 0.1; // 10% padding
-      this.xScaleMin = xMin - xPadding;
-      this.xScaleMax = xMax + xPadding;
     }
 
-    if (allYValues.length > 0) {
-      const yMin = Math.min(...allYValues);
-      const yMax = Math.max(...allYValues);
-      const yPadding = (yMax - yMin) * 0.1; // 10% padding
+    return Object.keys(puntosPorCluster).map((cluster) => ({
+      name: cluster === '1' ? 'En riesgo' : 'Sin riesgo',
+      series: puntosPorCluster[cluster],
+    }));
+  }
+
+  calcularEscalas() {
+    const allX = [];
+    const allY = [];
+
+    for (const serie of this.bubbleChartData) {
+      for (const punto of serie.series) {
+        allX.push(punto.x);
+        allY.push(punto.y);
+      }
+    }
+
+    if (allX.length && allY.length) {
+      const xMin = Math.min(...allX);
+      const xMax = Math.max(...allX);
+      const yMin = Math.min(...allY);
+      const yMax = Math.max(...allY);
+
+      const xPadding = (xMax - xMin) * 0.1;
+      const yPadding = (yMax - yMin) * 0.1;
+
+      this.xScaleMin = xMin - xPadding;
+      this.xScaleMax = xMax + xPadding;
       this.yScaleMin = yMin - yPadding;
       this.yScaleMax = yMax + yPadding;
     }
-  }
-
-  ngOnInit() {
-    this.calculateScaleLimits();
   }
 }
