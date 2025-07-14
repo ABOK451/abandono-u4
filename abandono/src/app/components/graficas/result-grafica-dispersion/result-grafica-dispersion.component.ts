@@ -57,7 +57,7 @@ export class ResultGraficaDispersionComponent {
     }
 
     return Object.keys(puntosPorCluster).map((cluster) => ({
-      name: cluster === '1' ? 'En riesgo' : 'Sin riesgo',
+      name: cluster === '1' ? 'Sin riesgo' : 'En riesgo',
       series: puntosPorCluster[cluster],
     }));
   }
