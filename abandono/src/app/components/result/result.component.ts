@@ -61,6 +61,58 @@ export class ResultComponent implements OnInit {
   barChartData: any[] = [];
   bubbleChartData: any[] = [];
 
+  modalAbierto = false;
+  estudianteSeleccionado: any = null;
+
+  abrirModal(estudiante: any) {
+    // Buscar detalle completo por nombre (o por id si tienes)
+    const detalleCompleto = this.datosOriginales.find(
+      (d) => d.nombre.trim() === estudiante.nombre.trim()
+    );
+
+    if (detalleCompleto) {
+      this.estudianteSeleccionado = detalleCompleto;
+    } else {
+      this.estudianteSeleccionado = estudiante; // fallback
+    }
+
+    this.modalAbierto = true;
+  }
+
+  esSi(valor: any): boolean {
+    return valor === 'Sí' || valor === 1 || valor === true;
+  }
+
+  cerrarModal() {
+    this.modalAbierto = false;
+    this.estudianteSeleccionado = null;
+  }
+
+  estaEnRiesgoPersonalizado(estudiante: any): boolean {
+    const promedio = parseFloat(estudiante.promedio);
+    const faltas = parseInt(estudiante.faltas, 10);
+
+    let condiciones = 0;
+
+    // 1. Promedio menor a 8.0
+    if (!isNaN(promedio) && promedio < 8.0) condiciones++;
+
+    // 2. Faltas 5 o más
+    if (!isNaN(faltas) && faltas >= 5) condiciones++;
+
+    // 3. NO está motivado
+    if (!this.esSi(estudiante.motivacion)) condiciones++;
+
+    // 4. Ha pensado en abandonar
+    if (this.esSi(estudiante.abandono_pensado)) condiciones++;
+
+    // 5. Tiene problemas emocionales
+    if (this.esSi(estudiante.problemas_emocionales)) condiciones++;
+
+    // Al menos 3 condiciones cumplidas = En riesgo
+    return condiciones >= 3;
+  }
+
   ngOnInit(): void {
     const data = JSON.parse(localStorage.getItem('resultados') || '{}');
 
@@ -114,6 +166,8 @@ export class ResultComponent implements OnInit {
       resultados_totales: this.resultados.length,
       resultados_filtrados: this.resultadosFiltrados.length,
     });
+
+    console.log('Datos originales: ', this.datosProcesados);
   }
 
   aplicarFiltro() {

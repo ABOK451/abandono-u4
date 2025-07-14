@@ -250,10 +250,36 @@
             </td>
           </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="['nombre', 'riesgo']"></tr>
+          <!-- Columna Acción -->
+          <ng-container matColumnDef="accion">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              class="bg-gray-50 px-6 py-4 text-left font-semibold text-gray-700 sticky top-0 z-10"
+            >
+              Analisis propio
+            </th>
+            <td
+              mat-cell
+              *matCellDef="let row"
+              class="px-6 py-4 border-b border-gray-100 hover:bg-blue-50 transition-colors"
+            >
+              <button
+                (click)="abrirModal(row)"
+                class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+              >
+                Ver detalles
+              </button>
+            </td>
+          </ng-container>
+
+          <tr
+            mat-header-row
+            *matHeaderRowDef="['nombre', 'riesgo', 'accion']"
+          ></tr>
           <tr
             mat-row
-            *matRowDef="let row; columns: ['nombre', 'riesgo']"
+            *matRowDef="let row; columns: ['nombre', 'riesgo', 'accion']"
             class="hover:bg-gray-50 transition-colors"
           ></tr>
         </table>
@@ -1247,3 +1273,108 @@
     background: #94a3b8;
   }
 </style>
+
+<div
+  *ngIf="modalAbierto"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative animate-fadeIn"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+  >
+    <h2
+      id="modal-title"
+      class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-2"
+    >
+      Detalles de {{ estudianteSeleccionado?.nombre }}
+    </h2>
+
+    <ul class="space-y-4 text-gray-700 text-base">
+      <li>
+        <span class="font-semibold text-gray-900">Promedio:</span>
+        <span>{{ estudianteSeleccionado?.promedio }}</span>
+      </li>
+      <li>
+        <span class="font-semibold text-gray-900">Faltas:</span>
+        <span>{{ estudianteSeleccionado?.faltas }}</span>
+      </li>
+      <li>
+        <span class="font-semibold text-gray-900">Motivado:</span>
+        <span
+          [ngClass]="
+            esSi(estudianteSeleccionado?.motivacion)
+              ? 'text-green-600 font-semibold'
+              : 'text-red-600 font-semibold'
+          "
+        >
+          {{ esSi(estudianteSeleccionado?.motivacion) ? "Sí" : "No" }}
+        </span>
+      </li>
+      <li>
+        <span class="font-semibold text-gray-900"
+          >Ha pensado en abandonar:</span
+        >
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.abandono_pensado === 'Sí'
+              ? 'text-red-600 font-semibold'
+              : 'text-green-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.abandono_pensado }}
+        </span>
+      </li>
+      <li>
+        <span class="font-semibold text-gray-900">Problemas emocionales:</span>
+        <span
+          [ngClass]="
+            estudianteSeleccionado?.problemas_emocionales === 'Sí'
+              ? 'text-red-600 font-semibold'
+              : 'text-green-600 font-semibold'
+          "
+        >
+          {{ estudianteSeleccionado?.problemas_emocionales }}
+        </span>
+      </li>
+      <li>
+        <span class="font-semibold text-gray-900">Riesgo:</span>
+        <span
+          [ngClass]="
+            estaEnRiesgoPersonalizado(estudianteSeleccionado)
+              ? 'text-red-600 font-semibold'
+              : 'text-green-600 font-semibold'
+          "
+        >
+          {{
+            estaEnRiesgoPersonalizado(estudianteSeleccionado)
+              ? "En riesgo"
+              : "Sin riesgo"
+          }}
+        </span>
+      </li>
+    </ul>
+
+    <button
+      (click)="cerrarModal()"
+      class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-full"
+      aria-label="Cerrar modal"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
